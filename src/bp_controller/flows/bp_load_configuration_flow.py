@@ -1,10 +1,7 @@
 from xml.etree import ElementTree
-import time
 from bp_controller.actions.port_reservation_actions import PortReservationActions
+from bp_controller.actions.test_configuration_actions import TestConfigurationActions
 from bp_controller.actions.test_execution_actions import TestExecutionActions
-from bp_controller.actions.test_file_actions import TestFileActions
-from os.path import basename
-import re
 from cloudshell.tg.breaking_point.flows.bp_flow import BPFlow
 
 
@@ -13,12 +10,13 @@ class BPLoadConfigurationFlow(BPFlow):
         # test_name = re.sub(r'\.xml|\.bpt', '', basename(test_file_path))
         # test_file = open(test_file_path, 'rb')
 
-        with self._session_manager.new_session() as rest_service:
-            test_file_actions = TestFileActions(rest_service, self._logger)
+        with self._session_manager.get_session() as rest_service:
+            test_file_actions = TestConfigurationActions(rest_service, self._logger)
             test_name = test_file_actions.import_test(test_file_path).get('result')
 
             test_info = self._get_test_info(test_file_path)
             port_reservation = PortReservationActions(rest_service, self._logger)
+            network_info = test_file_actions.get_network_neighborhood(test_info.get('network'))
             port_reservation.reserve_port(2, [0])
 
             # port_reservation.reserve_port(2,1)
@@ -39,5 +37,6 @@ class BPLoadConfigurationFlow(BPFlow):
         root = ElementTree.parse(file_path).getroot()
         testmodel = root.find('testmodel')
         test_info['name'] = testmodel.get('name')
+        test_info['network'] = testmodel.get('network')
         test_info['ports'] = testmodel.findall('interface')
         return test_info

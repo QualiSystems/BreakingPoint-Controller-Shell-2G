@@ -1,10 +1,20 @@
-from bp_controller.runners.bp_load_configuration_runner import BPTestRunner
+from bp_controller.runners.bp_test_runner import BPTestRunner
 from cloudshell.networking.devices.driver_helper import get_logger_with_thread_id, get_api
 from cloudshell.shell.core.resource_driver_interface import ResourceDriverInterface
 
+
 class BreakingPointControllerDriver(ResourceDriverInterface):
     def __init__(self):
-        pass
+        self._test_runner = None
+
+    def _get_actual_runner(self, context, logger, api):
+        if self._test_runner:
+            self._test_runner.context = context
+            self._test_runner.logger = logger
+            self._test_runner.api = api
+        else:
+            self._test_runner = BPTestRunner(context, logger, api)
+        return self._test_runner
 
     def initialize(self, context):
         """
@@ -19,12 +29,12 @@ class BreakingPointControllerDriver(ResourceDriverInterface):
         :type context: cloudshell.shell.core.driver_context.AutoLoadCommandContext
         :rtype: cloudshell.shell.core.driver_context.AutoLoadDetails
         """
-        pass
+
 
     def load_config(self, context, config_file_path):
         logger = get_logger_with_thread_id(context)
         api = get_api(context)
-        runner = BPTestRunner(context, logger, api)
+        runner = self._get_actual_runner(context, logger, api)
         return runner.load_configuration(config_file_path)
 
     def send_arp(self, context):

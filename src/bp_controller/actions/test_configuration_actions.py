@@ -2,7 +2,7 @@ from cloudshell.tg.breaking_point.rest_api.rest_json_client import RestJsonClien
 from os.path import basename
 
 
-class TestFileActions(object):
+class TestConfigurationActions(object):
     def __init__(self, rest_service, logger):
         """
         Reboot actions
@@ -38,4 +38,14 @@ class TestFileActions(object):
         uri = '/api/v1/bps/export/bpt/testname/' + test_name
         data = self._rest_service.request_get(uri)
         result = data
+        return result
+
+    def get_network_neighborhood(self, name):
+        self._logger.debug('Network info {0}'.format(name))
+        uri_r = '/api/v1/bps/network/operations/retrieve'
+        request_body = {'name': name}
+        self._rest_service.request_post(uri_r, request_body)
+        uri_g = '/api/v1/bps/network/'
+        data = self._rest_service.request_get(uri_g)
+        result = data.get('interfaces')
         return result
