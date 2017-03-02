@@ -1,20 +1,11 @@
-from bp_controller.runners.bp_test_runner import BPTestRunner
-from cloudshell.networking.devices.driver_helper import get_logger_with_thread_id, get_api
+from bp_controller.runners.bp_runner_pool import BPRunnersPool
+from cloudshell.shell.core.driver_context import AutoLoadDetails
 from cloudshell.shell.core.resource_driver_interface import ResourceDriverInterface
 
 
 class BreakingPointControllerDriver(ResourceDriverInterface):
     def __init__(self):
-        self._test_runner = None
-
-    def _get_actual_runner(self, context, logger, api):
-        if self._test_runner:
-            self._test_runner.context = context
-            self._test_runner.logger = logger
-            self._test_runner.api = api
-        else:
-            self._test_runner = BPTestRunner(context, logger, api)
-        return self._test_runner
+        self._runners_pool = BPRunnersPool()
 
     def initialize(self, context):
         """
@@ -29,13 +20,11 @@ class BreakingPointControllerDriver(ResourceDriverInterface):
         :type context: cloudshell.shell.core.driver_context.AutoLoadCommandContext
         :rtype: cloudshell.shell.core.driver_context.AutoLoadDetails
         """
-
+        return AutoLoadDetails([], [])
 
     def load_config(self, context, config_file_path):
-        logger = get_logger_with_thread_id(context)
-        api = get_api(context)
-        runner = self._get_actual_runner(context, logger, api)
-        return runner.load_configuration(config_file_path)
+        with self._runners_pool.actual_runner(context) as runner:
+            return runner.load_configuration_file(config_file_path)
 
     def send_arp(self, context):
         """ Send ARP for all objects (ports, devices, streams)
@@ -49,17 +38,20 @@ class BreakingPointControllerDriver(ResourceDriverInterface):
         :param context: the context the command runs on
         :type context: cloudshell.shell.core.driver_context.ResourceRemoteCommandContext
         """
-        pass
+        with self._runners_pool.actual_runner(context) as runner:
+            return runner.start_traffic(blocking)
 
     def stop_traffic(self, context):
         """
         :param context: the context the command runs on
         :type context: cloudshell.shell.core.driver_context.ResourceRemoteCommandContext
         """
-        pass
+        with self._runners_pool.actual_runner(context) as runner:
+            return runner.stop_traffic()
 
     def get_statistics(self, context, view_name, output_type):
-        pass
+        with self._runners_pool.actual_runner(context) as runner:
+            return runner.get_statistics(output_type)
 
     def cleanup(self):
         pass

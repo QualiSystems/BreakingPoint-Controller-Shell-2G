@@ -31,6 +31,14 @@ class TestExecutionActions(object):
         result = data
         return result
 
+    def get_real_time_statistics(self, test_id, stats_group='summary'):
+        self._logger.debug('Get RTS, testID {0}, {1}'.format(test_id, stats_group))
+        uri = '/api/v1/bps/tests/operations/getrts'
+        json_request = {'runid': test_id, 'statsGroup': stats_group}
+        data = self._rest_service.request_post(uri, json_request)
+        result = data
+        return result
+
     def get_test_status(self, test_id):
         self._logger.debug('Stop running, testID {}'.format(test_id))
         uri = '/api/v1/bps/tests/operations/result'
@@ -42,6 +50,15 @@ class TestExecutionActions(object):
     def running_tests(self):
         self._logger.debug('Running tests')
         uri = '/api/v1/bps/tests'
+        data = self._rest_service.request_get(uri)
+        result = data
+        return result
+
+    def get_result_file(self, test_id, result_format):
+        self._logger.debug('Running tests')
+        if result_format not in ['pdf', 'csv', 'rtf', 'html', 'xml', 'zip']:
+            raise RestActionsException(self.__class__.__name__, 'Incorrect format {}'.format(result_format))
+        uri = '/api/v1/bps/export/report/{0}/{1}'.format(test_id, result_format)
         data = self._rest_service.request_get(uri)
         result = data
         return result

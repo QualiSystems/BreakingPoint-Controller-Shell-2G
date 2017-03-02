@@ -31,6 +31,8 @@ class BPLoadConfigurationFlow(BPFlow):
             stats = test_execution_actions.get_result_file(result.get('testid'), 'pdf')
             print(test_name)
 
+
+
     def _get_test_info(self, file_path):
         test_info = {}
         root = ElementTree.parse(file_path).getroot()
