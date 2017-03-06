@@ -22,9 +22,9 @@ class BreakingPointControllerDriver(ResourceDriverInterface):
         """
         return AutoLoadDetails([], [])
 
-    def load_config(self, context, config_file_path):
+    def load_config(self, context, config_file_location):
         with self._runners_pool.actual_runner(context) as runner:
-            return runner.load_configuration_file(config_file_path)
+            return runner.load_configuration(config_file_location)
 
     def send_arp(self, context):
         """ Send ARP for all objects (ports, devices, streams)

@@ -1,19 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ShellsConfiguration xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://schemas.qualisystems.com/ResourceManagement/ShellsConfigurationSchema.xsd">
-	<ResourceTemplates>
-    	<ResourceTemplate Name="Breaking Point Chassis" Model="Breaking Point Chassis" Driver="BreakingPointChassisDriver">
-        	<Description></Description>
-        	<AutoLoad Enable="true">
-            	<Description>Load Breaking Point chassis</Description>
-        	</AutoLoad>
+<ResourceTemplates>
+    <ResourceTemplate Name="BreakingPoint Controller" Model="BreakingPoint Controller" Driver="BreakingPointControllerDriver">
+        <Description></Description>
+        <AutoLoad Enable="true">
+            <Description></Description>
+        </AutoLoad>
         <Attributes>
-            <Attribute Name="User" Value="admin" />
-            <Attribute Name="Password" Value="admin" />
             <Attribute Name="Client Install Path" Value="" />
-            <Attribute Name="Controller Group" Value="" />
-            <Attribute Name="Power Management" Value="" />
-            <Attribute Name="Supported Applications" Value="" />
+            <Attribute Name="Controller TCP Port" Value="" />
         </Attributes>
-    	</ResourceTemplate>
-	</ResourceTemplates>
+    </ResourceTemplate>    
+</ResourceTemplates>
 </ShellsConfiguration>
