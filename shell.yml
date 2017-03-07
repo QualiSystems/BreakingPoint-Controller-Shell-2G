@@ -1,7 +1,7 @@
 shell:
-    name: breaking_point_shell
+    name: breaking_point_controller_shell
     author: Yaroslav Nikonorov
     email: yaroslav.n@quali.com
-    description: Breaking Point chassis shell
+    description: Breaking Point controller shell
     version: 1.0.2
-    driver_name: BreakingPointChassisDriver
+    driver_name: BreakingPointControllerDriver

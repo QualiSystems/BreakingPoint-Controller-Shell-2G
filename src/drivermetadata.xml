@@ -10,8 +10,6 @@
                            DisplayName="Breaking Point config file" Description="Full path to Breaking Point test configuration file - bpt" />
             </Parameters>
         </Command>
-		<Command Name="send_arp" DisplayName="Start ARP/ND" Description="Send ARP/ND for all devices and streams" >
-        </Command>
         <Command Name="start_traffic" DisplayName="Start Traffic" Description="">
             <Parameters>
                <Parameter Name="blocking" Type="Lookup" Mandatory = "False" AllowedValues="True,False"

@@ -26,12 +26,12 @@ class BreakingPointControllerDriver(ResourceDriverInterface):
         with self._runners_pool.actual_runner(context) as runner:
             return runner.load_configuration(config_file_location)
 
-    def send_arp(self, context):
-        """ Send ARP for all objects (ports, devices, streams)
-        :param context: the context the command runs on
-        :type context: cloudshell.shell.core.driver_context.ResourceRemoteCommandContext
-        """
-        pass
+    # def send_arp(self, context):
+    #     """ Send ARP for all objects (ports, devices, streams)
+    #     :param context: the context the command runs on
+    #     :type context: cloudshell.shell.core.driver_context.ResourceRemoteCommandContext
+    #     """
+    #     pass
 
     def start_traffic(self, context, blocking):
         """

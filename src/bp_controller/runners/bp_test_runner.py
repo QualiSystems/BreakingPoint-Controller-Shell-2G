@@ -60,17 +60,24 @@ class BPTestRunner(BPRunner):
         cs_reserved_ports = BPReservationDetails(self.context, self.logger, self.api).get_chassis_ports()
         bp_test_interfaces = BPTestNetworkFlow(self.session_manager, self.logger).get_interfaces(self._network_name)
         reservation_order = []
+        self.logger.debug(cs_reserved_ports)
+        self.logger.debug(bp_test_interfaces)
         for bp_interface in bp_test_interfaces.values():
+            self.logger.debug('Associating interface {}'.format(bp_interface))
             if bp_interface in cs_reserved_ports:
                 reservation_order.append(cs_reserved_ports[bp_interface])
+            else:
+                raise Exception(self.__class__.__name__, 'Cannot find Port with Logical name {} in the reservation'.format(bp_interface))
 
         reservation_flow = BPPortReservationFlow(self.session_manager, self.logger)
         self._group_id = self.reservation_info.reserve(self.context.reservation.reservation_id, reservation_order)
         reservation_flow.reserve_ports(self._group_id, reservation_order)
 
     def start_traffic(self, blocking):
+        if not self._test_name or  not self._group_id:
+            raise Exception(self.__class__.__name__, 'Load configuration first')
         self._test_id = self._test_execution_flow.start_traffic(self._test_name, self._group_id)
-        if blocking:
+        if blocking.lower() == 'true':
             while self._test_execution_flow.test_rinning(self._test_id):
                 time.sleep(5)
 
