@@ -37,6 +37,7 @@ class BreakingPointControllerDriver(ResourceDriverInterface):
         """
         :param context: the context the command runs on
         :type context: cloudshell.shell.core.driver_context.ResourceRemoteCommandContext
+        :param blocking:
         """
         with self._runners_pool.actual_runner(context) as runner:
             return runner.start_traffic(blocking)

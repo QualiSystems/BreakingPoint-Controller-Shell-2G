@@ -35,7 +35,7 @@ class ReservationInfo(object):
             if res_id == reservation_id:
                 self._groups[group_id] = None
 
-    def _unreserve_all_ports(self, reservation_id):
+    def _unreserve_ports(self, reservation_id):
         for port, res_id in self._reserved_ports.iteritems():
             if res_id == reservation_id:
                 del self._reserved_ports[port]
@@ -47,5 +47,5 @@ class ReservationInfo(object):
 
     def unreserve(self, reservation_id):
         with self.__lock:
-            self._unreserve_all_ports(reservation_id)
+            self._unreserve_ports(reservation_id)
             self._unreserve_group(reservation_id)

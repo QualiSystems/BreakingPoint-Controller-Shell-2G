@@ -40,12 +40,19 @@ class TestConfigurationActions(object):
         result = data
         return result
 
-    def get_network_neighborhood(self, name):
-        self._logger.debug('Network info {0}'.format(name))
-        uri_r = '/api/v1/bps/network/operations/retrieve'
-        request_body = {'name': name}
-        self._rest_service.request_post(uri_r, request_body)
-        uri_g = '/api/v1/bps/network/'
-        data = self._rest_service.request_get(uri_g)
-        result = data.get('interfaces')
+
+    def reserve_port(self, slot, port_list):
+        self._logger.debug('Reserving ports {0} on slot {1}'.format(port_list, slot))
+        uri = '/api/v1/bps/ports/operations/reserve'
+        json_data = {"slot": slot, "portList": port_list, "group": "1", "force": "true"}
+        data = self._rest_service.request_post(uri, json_data)
+        result = data
+        return result
+
+    def unreserve_port(self, slot, port_list):
+        self._logger.debug('Unreserving ports {0} on slot {1}'.format(port_list, slot))
+        uri = '/api/v1/bps/ports/operations/unreserve'
+        json_data = {"slot": slot, "portList": port_list}
+        data = self._rest_service.request_post(uri, json_data)
+        result = data
         return result

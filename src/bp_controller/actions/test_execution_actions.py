@@ -15,13 +15,13 @@ class TestExecutionActions(object):
         self._rest_service = rest_service
         self._logger = logger
 
-    def start_test(self, test_name):
+    def start_test(self, test_name, group_id):
         self._logger.debug('Starting test {}'.format(test_name))
         uri = 'api/v1/bps/tests/operations/start'
-        json_data = {"modelname": test_name, "group": "1"}
+        json_data = {"modelname": test_name, "group": group_id}
         data = self._rest_service.request_post(uri, json_data)
-        result = data
-        return result
+        test_id = data.get('testid')
+        return test_id
 
     def stop_test(self, test_id):
         self._logger.debug('Stop running, testID {}'.format(test_id))
@@ -36,7 +36,7 @@ class TestExecutionActions(object):
         uri = '/api/v1/bps/tests/operations/result'
         json_request = {'runid': test_id}
         data = self._rest_service.request_post(uri, json_request)
-        result = data
+        result = data.get('result')
         return result
 
     def running_tests(self):

@@ -14,10 +14,10 @@ class PortReservationActions(object):
         self._rest_service = rest_service
         self._logger = logger
 
-    def reserve_port(self, slot, port_list):
-        self._logger.debug('Reserving ports {0} on slot {1}'.format(port_list, slot))
+    def reserve_port(self, slot, port_list, group):
+        self._logger.debug('Reserving ports {0} on slot {1} for group {2}'.format(port_list, slot, group))
         uri = '/api/v1/bps/ports/operations/reserve'
-        json_data = {"slot": slot, "portList": port_list, "group": "1", "force": "true"}
+        json_data = {"slot": slot, "portList": port_list, "group": group, "force": "true"}
         data = self._rest_service.request_post(uri, json_data)
         result = data
         return result
