@@ -18,7 +18,7 @@ class BPTestNetworkFlow(BPFlow):
                 result = re.search(r'number:\s*(?P<id>\d+)', value, re.IGNORECASE)
                 if result:
                     number = result.group('id')
-                    test_interfaces[number] = str(interface_id).lower()
+                    test_interfaces[int(number)] = str(interface_id).lower()
                 else:
                     BPFlowException(self.__class__.__name__, 'Interface number is not defined')
             return test_interfaces

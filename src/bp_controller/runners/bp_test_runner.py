@@ -35,6 +35,8 @@ class BPTestRunner(BPRunner):
         self.__reservation_flow = None
         self.__test_execution_flow = None
         self.__test_statistics_flow = None
+        self.__test_network_flow = None
+        self.__reservation_details = None
 
     @property
     def _reservation_flow(self):
@@ -66,6 +68,30 @@ class BPTestRunner(BPRunner):
             self.__test_statistics_flow = BPStatisticsFlow(self.session_manager, self.logger)
         return self.__test_statistics_flow
 
+    @property
+    def _test_network_flow(self):
+        """
+        :return:
+        :rtype: BPTestNetworkFlow
+        """
+        if not self.__test_network_flow:
+            self.__test_network_flow = BPTestNetworkFlow(self.session_manager, self.logger)
+        return self.__test_network_flow
+
+    @property
+    def _reservation_details(self):
+        """
+        :return:
+        :rtype: BPReservationDetails
+        """
+        if not self.__reservation_details:
+            self.__reservation_details = BPReservationDetails(self.context, self.logger, self.api)
+        else:
+            self.__reservation_details.api = self.api
+            self.__reservation_details.context = self.context
+            self.__reservation_details.logger = self.logger
+        return self.__reservation_details
+
     def load_configuration(self, file_path):
         self._load_test_file(file_path)
         self._reserve_ports()
@@ -76,8 +102,9 @@ class BPTestRunner(BPRunner):
             test_file_path)
 
     def _reserve_ports(self):
-        cs_reserved_ports = BPReservationDetails(self.context, self.logger, self.api).get_chassis_ports()
-        bp_test_interfaces = BPTestNetworkFlow(self.session_manager, self.logger).get_interfaces(self._network_name)
+        # associating ports
+        cs_reserved_ports = self._reservation_details.get_chassis_ports()
+        bp_test_interfaces = self._test_network_flow.get_interfaces(self._network_name)
         reservation_order = []
         self.logger.debug('CS reserved ports {}'.format(cs_reserved_ports))
         self.logger.debug('BP test interfaces {}'.format(bp_test_interfaces))
@@ -89,6 +116,7 @@ class BPTestRunner(BPRunner):
                 raise BPRunnerException(self.__class__.__name__,
                                         'Cannot find Port with Logical name {} in the reservation'.format(bp_interface))
 
+        # reserving ports in certain order
         self._group_id = self.reservation_info.reserve(self.context.reservation.reservation_id, reservation_order)
         self._reservation_flow.reserve_ports(self._group_id, reservation_order)
 
