@@ -1,4 +1,8 @@
+import csv
+import json
 import time
+
+import io
 
 from bp_controller.flows.bp_load_configuration_file_flow import BPLoadConfigurationFileFlow
 from bp_controller.flows.bp_port_reservation_flow import BPPortReservationFlow
@@ -6,7 +10,9 @@ from bp_controller.flows.bp_statistics_flow import BPStatisticsFlow
 from bp_controller.flows.bp_test_execution_flow import BPTestExecutionFlow
 from bp_controller.flows.bp_test_network_flow import BPTestNetworkFlow
 from bp_controller.helpers.bp_reservation_details import BPReservationDetails
+from bp_controller.reservation_info import ReservationInfo
 from cloudshell.tg.breaking_point.runners.bp_runner import BPRunner
+from cloudshell.tg.breaking_point.runners.exceptions import BPRunnerException
 
 
 class BPTestRunner(BPRunner):
@@ -17,15 +23,28 @@ class BPTestRunner(BPRunner):
         :param logger:
         :param api:
         :param reservation_info:
+        :type reservation_info: ReservationInfo
         """
         super(BPTestRunner, self).__init__(context, logger, api)
-        self.__test_statistics_flow = None
         self.reservation_info = reservation_info
         self._test_id = None
         self._test_name = None
         self._network_name = None
-        self.__test_execution_flow = None
         self._group_id = None
+
+        self.__reservation_flow = None
+        self.__test_execution_flow = None
+        self.__test_statistics_flow = None
+
+    @property
+    def _reservation_flow(self):
+        """
+        :return:
+        :rtype: BPPortReservationFlow
+        """
+        if not self.__reservation_flow:
+            self.__reservation_flow = BPPortReservationFlow(self.session_manager, self.logger)
+        return self.__reservation_flow
 
     @property
     def _test_execution_flow(self):
@@ -60,29 +79,52 @@ class BPTestRunner(BPRunner):
         cs_reserved_ports = BPReservationDetails(self.context, self.logger, self.api).get_chassis_ports()
         bp_test_interfaces = BPTestNetworkFlow(self.session_manager, self.logger).get_interfaces(self._network_name)
         reservation_order = []
-        self.logger.debug(cs_reserved_ports)
-        self.logger.debug(bp_test_interfaces)
+        self.logger.debug('CS reserved ports {}'.format(cs_reserved_ports))
+        self.logger.debug('BP test interfaces {}'.format(bp_test_interfaces))
         for bp_interface in bp_test_interfaces.values():
             self.logger.debug('Associating interface {}'.format(bp_interface))
             if bp_interface in cs_reserved_ports:
                 reservation_order.append(cs_reserved_ports[bp_interface])
             else:
-                raise Exception(self.__class__.__name__, 'Cannot find Port with Logical name {} in the reservation'.format(bp_interface))
+                raise BPRunnerException(self.__class__.__name__,
+                                        'Cannot find Port with Logical name {} in the reservation'.format(bp_interface))
 
-        reservation_flow = BPPortReservationFlow(self.session_manager, self.logger)
         self._group_id = self.reservation_info.reserve(self.context.reservation.reservation_id, reservation_order)
-        reservation_flow.reserve_ports(self._group_id, reservation_order)
+        self._reservation_flow.reserve_ports(self._group_id, reservation_order)
 
     def start_traffic(self, blocking):
-        if not self._test_name or  not self._group_id:
-            raise Exception(self.__class__.__name__, 'Load configuration first')
+        if not self._test_name or not self._group_id:
+            raise BPRunnerException(self.__class__.__name__, 'Load configuration first')
         self._test_id = self._test_execution_flow.start_traffic(self._test_name, self._group_id)
         if blocking.lower() == 'true':
-            while self._test_execution_flow.test_rinning(self._test_id):
-                time.sleep(5)
+            self._test_execution_flow.block_while_test_running(self._test_id)
+            ports = self.reservation_info.unreserve(self.context.reservation.reservation_id)
+            self._reservation_flow.unreserve_ports(ports)
 
     def stop_traffic(self):
-        return self._test_execution_flow.stop_traffic(self._test_id)
+        if not self._test_id:
+            raise BPRunnerException(self.__class__.__name__, 'Test id is not defined, run the test first')
+        self._test_execution_flow.stop_traffic(self._test_id)
+        ports = self.reservation_info.unreserve(self.context.reservation.reservation_id)
+        self._reservation_flow.unreserve_ports(ports)
 
-    def get_statistics(self, output_format):
-        return self._test_statistics_flow.get_statistics(self._test_id, output_format)
+    def get_statistics(self, view_name, output_format):
+        if not self._test_id:
+            raise BPRunnerException(self.__class__.__name__, 'Test id is not defined, run the test first')
+        result = self._test_statistics_flow.get_rt_statistics(self._test_id, view_name)
+        if output_format.lower() == 'json':
+            statistics = json.dumps(result, indent=4, sort_keys=True, ensure_ascii=False)
+            # print statistics
+            # self.api.WriteMessageToReservationOutput(self.context.reservation.reservation_id, statistics)
+        elif output_format.lower() == 'csv':
+            output = io.BytesIO()
+            w = csv.DictWriter(output, result.keys())
+            w.writeheader()
+            w.writerow(result)
+            statistics = output.getvalue().strip('\r\n')
+
+            # self.api.WriteMessageToReservationOutput(self.context.reservation.reservation_id,
+            #                                          output.getvalue().strip('\r\n'))
+        else:
+            raise BPRunnerException(self.__class__.__name__, 'Incorrect file format, supported csv or json only')
+        return statistics

@@ -8,7 +8,11 @@ class PortReservationException(Exception):
 class ReservationInfo(object):
     def __init__(self, groups_limit=12):
         self.__lock = Lock()
-        self._groups = {group: None for group in xrange(1, groups_limit + 1)}
+        self._groups_limit = groups_limit
+        self._initialize()
+
+    def _initialize(self):
+        self._groups = {group: None for group in xrange(1, self._groups_limit + 1)}
         self._reserved_ports = {}
 
     def _get_and_reserve_group_id(self, reservation_id):
@@ -36,9 +40,10 @@ class ReservationInfo(object):
                 self._groups[group_id] = None
 
     def _unreserve_ports(self, reservation_id):
-        for port, res_id in self._reserved_ports.iteritems():
-            if res_id == reservation_id:
-                del self._reserved_ports[port]
+        ports = self.reserved_ports(reservation_id)
+        for port in ports:
+            del self._reserved_ports[port]
+        return ports
 
     def reserve(self, reservation_id, port_list):
         with self.__lock:
@@ -47,5 +52,18 @@ class ReservationInfo(object):
 
     def unreserve(self, reservation_id):
         with self.__lock:
-            self._unreserve_ports(reservation_id)
+            reserved_ports = self._unreserve_ports(reservation_id)
             self._unreserve_group(reservation_id)
+            return reserved_ports
+
+    def reserved_ports(self, reservation_id):
+        ports = []
+        for port, res_id in self._reserved_ports.iteritems():
+            if res_id == reservation_id:
+                ports.append(port)
+        return ports
+
+    def unreserve_all(self):
+        reserved_ports = self._reserved_ports.values()
+        self._initialize()
+        return reserved_ports

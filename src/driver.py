@@ -1,4 +1,5 @@
 from bp_controller.runners.bp_runner_pool import BPRunnersPool
+from cloudshell.networking.devices.driver_helper import get_logger_with_thread_id
 from cloudshell.shell.core.driver_context import AutoLoadDetails
 from cloudshell.shell.core.resource_driver_interface import ResourceDriverInterface
 
@@ -52,10 +53,18 @@ class BreakingPointControllerDriver(ResourceDriverInterface):
 
     def get_statistics(self, context, view_name, output_type):
         with self._runners_pool.actual_runner(context) as runner:
-            return runner.get_statistics(output_type)
+            return runner.get_statistics(view_name, output_type)
 
     def cleanup(self):
         pass
 
     def keep_alive(self, context, cancellation_context):
+        # logger = get_logger_with_thread_id(context)
+        # logger.debug(context)
+        # if hasattr(context, 'reservation'):
+        #     logger.debug('KEEPALIVE_RESERVATION {}'.format(context.reservation.reservation_id))
+        # while not cancellation_context.is_cancelled:
+        #     pass
+        # if cancellation_context.is_cancelled:
+        #     raise Exception(self.__class__.__name__, 'Keepalive canceled, {}'.format(context))
         pass

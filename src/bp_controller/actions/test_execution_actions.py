@@ -32,7 +32,7 @@ class TestExecutionActions(object):
         return result
 
     def get_test_status(self, test_id):
-        self._logger.debug('Stop running, testID {}'.format(test_id))
+        self._logger.debug('Geting test status, testID {}'.format(test_id))
         uri = '/api/v1/bps/tests/operations/result'
         json_request = {'runid': test_id}
         data = self._rest_service.request_post(uri, json_request)

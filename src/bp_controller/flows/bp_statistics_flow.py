@@ -1,23 +1,19 @@
-from xml.etree import ElementTree
-from bp_controller.actions.port_reservation_actions import PortReservationActions
-from bp_controller.actions.test_configuration_actions import TestConfigurationActions
-from bp_controller.actions.test_execution_actions import TestExecutionActions
 from bp_controller.actions.test_statistics_actions import TestStatisticsActions
 from cloudshell.tg.breaking_point.flows.bp_flow import BPFlow
+from cloudshell.tg.breaking_point.flows.exceptions import BPFlowException
 
 
 class BPStatisticsFlow(BPFlow):
-    def get_statistics(self, test_id, format):
+    def get_statistics(self, test_id, file_format):
+        if not file_format or not file_format.lower() in ['csv', 'xml']:
+            raise BPFlowException(self.__class__.__name__, 'Incorrect file format, supportde csv or json only')
         with self._session_manager.get_session() as rest_service:
             statistics_actions = TestStatisticsActions(rest_service, self._logger)
-            stats = statistics_actions.get_result_file(test_id, 'pdf')
+            stats = statistics_actions.get_result_file(test_id, file_format.lower())
             return stats
 
-    def _get_test_info(self, file_path):
-        test_info = {}
-        root = ElementTree.parse(file_path).getroot()
-        testmodel = root.find('testmodel')
-        test_info['name'] = testmodel.get('name')
-        test_info['network'] = testmodel.get('network')
-        test_info['ports'] = testmodel.findall('interface')
-        return test_info
+    def get_rt_statistics(self, test_id, view_name):
+        with self._session_manager.get_session() as rest_service:
+            statistics_actions = TestStatisticsActions(rest_service, self._logger)
+            stats = statistics_actions.get_real_time_statistics(test_id, view_name)
+            return stats

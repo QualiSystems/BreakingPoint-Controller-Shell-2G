@@ -12,3 +12,10 @@ class BPPortReservationFlow(BPFlow):
             results = []
             for slot, port in ports:
                 result = port_reservation.reserve_port(slot, [port], group)
+
+    def unreserve_ports(self, ports):
+        with self._session_manager.get_session() as rest_service:
+            port_reservation = PortReservationActions(rest_service, self._logger)
+            results = []
+            for slot, port in ports:
+                result = port_reservation.unreserve_port(slot, [port])
