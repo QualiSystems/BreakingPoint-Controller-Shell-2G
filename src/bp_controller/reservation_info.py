@@ -20,6 +20,8 @@ class ReservationInfo(object):
         for group_id, existing_res_id in self._groups.iteritems():
             if (not existing_res_id and not available_group) or (existing_res_id and existing_res_id == reservation_id):
                 available_group = group_id
+                if not existing_res_id:
+                    self._groups[group_id] = reservation_id
         if not available_group:
             raise PortReservationException(self.__class__.__name__,
                                            'Cannot find available group id for reservation {0}'.format(reservation_id))
@@ -30,9 +32,9 @@ class ReservationInfo(object):
             if port not in self._reserved_ports:
                 self._reserved_ports[port] = reservation_id
             elif self._reserved_ports[port] != reservation_id:
-                raise PortReservationException(self.__class__.__name__, 'Port {0} has been reserved by {1}'.format(port,
-                                                                                                                   self._reserved_ports[
-                                                                                                                       port]))
+                raise PortReservationException(self.__class__.__name__,
+                                               'Port {0} has been reserved by {1}'.format(port,
+                                                                                          self._reserved_ports[port]))
 
     def _unreserve_group(self, reservation_id):
         for group_id, res_id in self._groups.iteritems():
