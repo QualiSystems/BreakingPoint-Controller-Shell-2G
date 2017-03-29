@@ -3,6 +3,7 @@ import json
 import time
 
 import io
+from xml.etree import ElementTree
 
 from bp_controller.flows.bp_load_configuration_file_flow import BPLoadConfigurationFileFlow
 from bp_controller.flows.bp_port_reservation_flow import BPPortReservationFlow
@@ -30,6 +31,7 @@ class BPTestRunner(BPRunner):
         self._test_id = None
         self._test_name = None
         self._network_name = None
+        self._interfaces = None
         self._group_id = None
 
         self.__reservation_flow = None
@@ -97,20 +99,26 @@ class BPTestRunner(BPRunner):
         self._reserve_ports()
 
     def _load_test_file(self, test_file_path):
-        self._test_name, self._network_name = BPLoadConfigurationFileFlow(self.session_manager,
-                                                                          self.logger).load_configuration(
+        self._test_name = BPLoadConfigurationFileFlow(self.session_manager,
+                                                      self.logger).load_configuration(
             test_file_path)
+        test_model = ElementTree.parse(test_file_path).getroot().find('testmodel')
+        self._network_name = test_model.get('network')
+        self._interfaces = []
+        for interface in test_model.findall('interface'):
+            self._interfaces.append(int(interface.get('number')))
 
     def _reserve_ports(self):
         # associating ports
+        bp_test_interfaces = self._test_network_flow.get_interfaces(self._network_name) if self._network_name else {}
         cs_reserved_ports = self._reservation_details.get_chassis_ports()
-        bp_test_interfaces = self._test_network_flow.get_interfaces(self._network_name)
         reservation_order = []
         self.logger.debug('CS reserved ports {}'.format(cs_reserved_ports))
         self.logger.debug('BP test interfaces {}'.format(bp_test_interfaces))
-        for bp_interface in bp_test_interfaces.values():
-            self.logger.debug('Associating interface {}'.format(bp_interface))
-            if bp_interface in cs_reserved_ports:
+        for int_number in sorted(self._interfaces):
+            bp_interface = bp_test_interfaces.get(int_number, None)
+            if bp_interface and bp_interface in cs_reserved_ports:
+                self.logger.debug('Associating interface {}'.format(bp_interface))
                 reservation_order.append(cs_reserved_ports[bp_interface])
             else:
                 raise BPRunnerException(self.__class__.__name__,
@@ -121,7 +129,7 @@ class BPTestRunner(BPRunner):
         self._reservation_flow.reserve_ports(self._group_id, reservation_order)
 
     def start_traffic(self, blocking):
-        if not self._test_name or not self._group_id:
+        if not self._test_name:
             raise BPRunnerException(self.__class__.__name__, 'Load configuration first')
         self._test_id = self._test_execution_flow.start_traffic(self._test_name, self._group_id)
         if blocking.lower() == 'true':

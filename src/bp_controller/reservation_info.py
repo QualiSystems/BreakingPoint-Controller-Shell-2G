@@ -64,6 +64,7 @@ class ReservationInfo(object):
         return ports
 
     def unreserve_all(self):
-        reserved_ports = self._reserved_ports.values()
-        self._initialize()
-        return reserved_ports
+        with self.__lock:
+            reserved_ports = self._reserved_ports.values()
+            self._initialize()
+            return reserved_ports
