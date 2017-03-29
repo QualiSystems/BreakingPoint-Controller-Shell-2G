@@ -33,13 +33,30 @@ class TestConfigurationActions(object):
         result = data
         return result
 
+    def import_pcap(self, pcap_file_path):
+        """
+        Upload test file to the BP controller
+        :param test_name:
+        :type test_name: str
+        :param test_file:
+        :type test_file: file
+        :return:
+        """
+        self._logger.debug('Importing test {}'.format(pcap_file_path))
+        uri = '/api/v1/bps/upload/capture'
+        json_data = {'force': True}
+        file_name = basename(pcap_file_path)
+        files = {'file': (file_name, open(pcap_file_path, 'rb'), "multipart/form-data")}
+        data = self._rest_service.request_post_files(uri, json_data, files)
+        result = data
+        return result
+
     def export_test(self, test_name):
         self._logger.debug('Exporting test {0}'.format(test_name))
         uri = '/api/v1/bps/export/bpt/testname/' + test_name
         data = self._rest_service.request_get(uri)
         result = data
         return result
-
 
     def reserve_port(self, slot, port_list):
         self._logger.debug('Reserving ports {0} on slot {1}'.format(port_list, slot))

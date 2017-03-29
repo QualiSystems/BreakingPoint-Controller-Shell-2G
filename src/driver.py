@@ -1,5 +1,4 @@
 from bp_controller.runners.bp_runner_pool import BPRunnersPool
-from cloudshell.networking.devices.driver_helper import get_logger_with_thread_id
 from cloudshell.shell.core.driver_context import AutoLoadDetails
 from cloudshell.shell.core.resource_driver_interface import ResourceDriverInterface
 
@@ -25,7 +24,11 @@ class BreakingPointControllerDriver(ResourceDriverInterface):
 
     def load_config(self, context, config_file_location):
         with self._runners_pool.actual_runner(context) as runner:
-            return runner.load_configuration(config_file_location)
+            return runner.load_configuration(config_file_location.replace('"', ''))
+
+    def load_pcap(self, context, pcap_file_location):
+        with self._runners_pool.actual_runner(context) as runner:
+            return runner.load_pcap(pcap_file_location.replace('"', ''))
 
     # def send_arp(self, context):
     #     """ Send ARP for all objects (ports, devices, streams)
@@ -54,6 +57,11 @@ class BreakingPointControllerDriver(ResourceDriverInterface):
     def get_statistics(self, context, view_name, output_type):
         with self._runners_pool.actual_runner(context) as runner:
             return runner.get_statistics(view_name, output_type)
+
+    def get_results(self, context):
+
+        with self._runners_pool.actual_runner(context) as runner:
+            return runner.get_results()
 
     def cleanup(self):
         pass

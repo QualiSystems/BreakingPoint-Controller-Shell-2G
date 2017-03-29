@@ -53,6 +53,7 @@ class BPRunnersPool(object):
         api = get_api(context)
 
         reservation_id = context.reservation.reservation_id
+        logger.info("Created runner for {0}".format(reservation_id))
         if reservation_id not in self._runners:
             runner_locker = InstanceLocker(BPTestRunner(context, logger, api, self._reservation_info))
             self._runners[reservation_id] = runner_locker
