@@ -18,10 +18,12 @@ class ReservationInfo(object):
     def _get_and_reserve_group_id(self, reservation_id):
         available_group = None
         for group_id, existing_res_id in self._groups.iteritems():
-            if (not existing_res_id and not available_group) or (existing_res_id and existing_res_id == reservation_id):
+            if not existing_res_id and not available_group:
                 available_group = group_id
-                if not existing_res_id:
-                    self._groups[group_id] = reservation_id
+                self._groups[group_id] = reservation_id
+            elif existing_res_id and existing_res_id == reservation_id:
+                available_group = group_id
+                break
         if not available_group:
             raise PortReservationException(self.__class__.__name__,
                                            'Cannot find available group id for reservation {0}'.format(reservation_id))

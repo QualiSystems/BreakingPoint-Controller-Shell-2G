@@ -14,7 +14,7 @@ from bp_controller.flows.bp_statistics_flow import BPStatisticsFlow
 from bp_controller.flows.bp_test_execution_flow import BPTestExecutionFlow
 from bp_controller.flows.bp_test_network_flow import BPTestNetworkFlow
 from bp_controller.helpers.bp_reservation_details import BPReservationDetails
-from bp_controller.quali_rest_api_helper import QualiAPIHelper
+from bp_controller.helpers.quali_rest_api_helper import QualiAPIHelper
 from bp_controller.reservation_info import ReservationInfo
 from cloudshell.tg.breaking_point.runners.bp_runner import BPRunner
 from cloudshell.tg.breaking_point.runners.exceptions import BPRunnerException
@@ -142,6 +142,9 @@ class BPTestRunner(BPRunner):
             if bp_interface and bp_interface in cs_reserved_ports:
                 self.logger.debug('Associating interface {}'.format(bp_interface))
                 reservation_order.append(cs_reserved_ports[bp_interface])
+            else:
+                raise BPRunnerException(self.__class__.__name__,
+                                        'Cannot find Port with Logical name {} in the reservation'.format(bp_interface))
 
         # reserving ports in certain order
         self._group_id = self.reservation_info.reserve(self.context.reservation.reservation_id, reservation_order)
