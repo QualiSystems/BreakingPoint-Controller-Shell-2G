@@ -1,7 +1,7 @@
 import re
 
 
-class BPReservationDetails(object):
+class BPCSReservationDetails(object):
     PORT_FAMILY = 'Port'
     PORT_ATTRIBUTE = 'Logical Name'
 

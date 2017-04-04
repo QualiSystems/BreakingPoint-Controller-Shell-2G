@@ -1,14 +1,14 @@
 from threading import Lock
 
-from bp_controller.reservation_info import ReservationInfo
 from bp_controller.runners.bp_test_runner import BPTestRunner
-from cloudshell.networking.devices.driver_helper import get_logger_with_thread_id, get_api
+from cloudshell.devices.driver_helper import get_logger_with_thread_id, get_api
 
 
 class InstanceLocker(object):
     """
     Lock for each runner instance
     """
+
     def __init__(self, instance):
         self.__lock = Lock()
         self._instance = instance
@@ -38,9 +38,9 @@ class BPRunnersPool(object):
     """
     Pool for runner instances
     """
-    def __init__(self, reservation_info=ReservationInfo()):
+
+    def __init__(self):
         self._runners = {}
-        self._reservation_info = reservation_info
 
     def actual_runner(self, context):
         """
@@ -53,11 +53,12 @@ class BPRunnersPool(object):
         api = get_api(context)
 
         reservation_id = context.reservation.reservation_id
-        logger.info("Created runner for {0}".format(reservation_id))
         if reservation_id not in self._runners:
-            runner_locker = InstanceLocker(BPTestRunner(context, logger, api, self._reservation_info))
+            logger.info("Created new runner for {0}".format(reservation_id))
+            runner_locker = InstanceLocker(BPTestRunner(context, logger, api))
             self._runners[reservation_id] = runner_locker
         else:
+            logger.info("Geting existing runner for {0}".format(reservation_id))
             runner_locker = self._runners[reservation_id]
             runner_locker.instance.context = context
             runner_locker.instance.logger = logger

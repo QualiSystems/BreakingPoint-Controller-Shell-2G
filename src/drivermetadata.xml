@@ -1,9 +1,9 @@
 <Driver Description="Shell to setup and run Breaking Point traffic" MainClass="driver.BreakingPointControllerDriver"
         Name="BreakingPointControllerDriver" Version="1.0.0">
     <Layout>
-        <Category Name="Hidden Commands">
+        <!--<Category Name="Hidden Commands">-->
             <Command Name="keep_alive" DisplayName="Keep Alive" Tags="" Description="" EnableCancellation="true"/>
-        </Category>
+        <!--</Category>-->
 
         <Command Name="load_config" DisplayName="Load configuration" Description="Reserve ports and load configuration">
             <Parameters>

@@ -14,6 +14,15 @@ class PortReservationActions(object):
         self._rest_service = rest_service
         self._logger = logger
 
+    def port_status(self):
+        self._logger.debug('Port status')
+        uri = '/api/v1/bps/ports'
+        data = self._rest_service.request_get(uri)
+        result = data.get('portReservationState')
+        self._logger.info(result)
+        return result
+
+
     def reserve_port(self, slot, port_list, group):
         self._logger.debug('Reserving ports {0} on slot {1} for group {2}'.format(port_list, slot, group))
         uri = '/api/v1/bps/ports/operations/reserve'

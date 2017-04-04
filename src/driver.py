@@ -1,3 +1,4 @@
+import time
 from bp_controller.runners.bp_runner_pool import BPRunnersPool
 from cloudshell.shell.core.driver_context import AutoLoadDetails
 from cloudshell.shell.core.resource_driver_interface import ResourceDriverInterface
@@ -59,7 +60,6 @@ class BreakingPointControllerDriver(ResourceDriverInterface):
             return runner.get_statistics(view_name, output_type)
 
     def get_results(self, context):
-
         with self._runners_pool.actual_runner(context) as runner:
             return runner.get_results()
 
@@ -72,7 +72,8 @@ class BreakingPointControllerDriver(ResourceDriverInterface):
         # if hasattr(context, 'reservation'):
         #     logger.debug('KEEPALIVE_RESERVATION {}'.format(context.reservation.reservation_id))
         # while not cancellation_context.is_cancelled:
-        #     pass
-        # if cancellation_context.is_cancelled:
-        #     raise Exception(self.__class__.__name__, 'Keepalive canceled, {}'.format(context))
-        pass
+        #     time.sleep(1)
+
+        with self._runners_pool.actual_runner(context) as runner:
+            return runner.close()
+        # raise Exception(self.__class__.__name__, 'Keepalive canceled, {}'.format(context.reservation.reservation_id))
