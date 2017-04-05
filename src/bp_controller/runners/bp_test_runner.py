@@ -42,7 +42,7 @@ class BPTestRunner(BPRunner):
         :rtype: BPTestExecutionFlow
         """
         if not self.__test_execution_flow:
-            self.__test_execution_flow = BPTestExecutionFlow(self._session_manager, self._logger)
+            self.__test_execution_flow = BPTestExecutionFlow(self._session_manager, self.logger)
         return self.__test_execution_flow
 
     @property
@@ -52,7 +52,7 @@ class BPTestRunner(BPRunner):
         :rtype: BPStatisticsFlow
         """
         if not self.__test_statistics_flow:
-            self.__test_statistics_flow = BPStatisticsFlow(self._session_manager, self._logger)
+            self.__test_statistics_flow = BPStatisticsFlow(self._session_manager, self.logger)
         return self.__test_statistics_flow
 
     @property
@@ -62,7 +62,7 @@ class BPTestRunner(BPRunner):
         :rtype: BPStatisticsFlow
         """
         if not self.__test_results_flow:
-            self.__test_results_flow = BPResultsFlow(self._session_manager, self._logger)
+            self.__test_results_flow = BPResultsFlow(self._session_manager, self.logger)
         return self.__test_results_flow
 
     @property
@@ -72,11 +72,11 @@ class BPTestRunner(BPRunner):
         :rtype: BPReservationDetails
         """
         if not self.__reservation_details:
-            self.__reservation_details = BPCSReservationDetails(self._context, self._logger, self._api)
+            self.__reservation_details = BPCSReservationDetails(self.context, self.logger, self.api)
         else:
-            self.__reservation_details.api = self._api
-            self.__reservation_details.context = self._context
-            self.__reservation_details.logger = self._logger
+            self.__reservation_details.api = self.api
+            self.__reservation_details.context = self.context
+            self.__reservation_details.logger = self.logger
         return self.__reservation_details
 
     @property
@@ -87,12 +87,12 @@ class BPTestRunner(BPRunner):
         """
         if not self.__port_reservation_helper:
             self.__port_reservation_helper = PortReservationHelper(self._session_manager, self._cs_reservation_details,
-                                                                   self._logger)
+                                                                   self.logger)
         return self.__port_reservation_helper
 
     def load_configuration(self, file_path):
         self._test_name = BPLoadConfigurationFileFlow(self._session_manager,
-                                                      self._logger).load_configuration(file_path)
+                                                      self.logger).load_configuration(file_path)
         test_model = ElementTree.parse(file_path).getroot().find('testmodel')
         network_name = test_model.get('network')
         interfaces = []
@@ -101,8 +101,8 @@ class BPTestRunner(BPRunner):
         self._port_reservation_helper.reserve_ports(network_name, interfaces)
 
     def load_pcap(self, file_path):
-        response_file_name = BPLoadPcapFileFlow(self._session_manager, self._logger).load_pcap(file_path)
-        self._logger.info("Response received: " + str(response_file_name))
+        response_file_name = BPLoadPcapFileFlow(self._session_manager, self.logger).load_pcap(file_path)
+        self.logger.info("Response received: " + str(response_file_name))
         file_name = file_path.split("\\")[-1].split(".")[0]
         if not re.search(response_file_name, file_name, re.IGNORECASE):
             raise BPRunnerException(self.__class__.__name__, 'Unable to load pcap file')
@@ -172,6 +172,6 @@ class BPTestRunner(BPRunner):
         return "Please check attachments for results"
 
     def close(self):
-        reservation_id = self._context.reservation.reservation_id
-        self._logger.debug('Close session for reservation ID: '.format(reservation_id))
+        reservation_id = self.context.reservation.reservation_id
+        self.logger.debug('Close session for reservation ID: '.format(reservation_id))
         self._port_reservation_helper.unreserve_ports()

@@ -60,14 +60,8 @@ class BreakingPointControllerDriver(ResourceDriverInterface):
         self._runners_pool.close_all_runners()
 
     def keep_alive(self, context, cancellation_context):
-        pass
-        # logger = get_logger_with_thread_id(context)
-        # logger.debug(context)
-        # if hasattr(context, 'reservation'):
-        #     logger.debug('KEEPALIVE_RESERVATION {}'.format(context.reservation.reservation_id))
-        # while not cancellation_context.is_cancelled:
-        #     time.sleep(1)
+        while not cancellation_context.is_cancelled:
+            time.sleep(1)
 
-        # with self._runners_pool.actual_runner(context) as runner:
-        #     return runner.close()
-        # raise Exception(self.__class__.__name__, 'Keepalive canceled, {}'.format(context.reservation.reservation_id))
+        with self._runners_pool.actual_runner(context) as runner:
+            return runner.close()

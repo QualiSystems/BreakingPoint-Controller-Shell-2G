@@ -17,10 +17,6 @@ class InstanceLocker(object):
     def instance(self):
         return self._instance
 
-    @instance.setter
-    def instance(self, value):
-        self._instance = value
-
     def __enter__(self):
         """
 
