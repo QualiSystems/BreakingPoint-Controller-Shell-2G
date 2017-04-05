@@ -58,9 +58,13 @@ class BPRunnersPool(object):
             runner_locker = InstanceLocker(BPTestRunner(context, logger, api))
             self._runners[reservation_id] = runner_locker
         else:
-            logger.info("Geting existing runner for {0}".format(reservation_id))
+            logger.info("Getting existing runner for {0}".format(reservation_id))
             runner_locker = self._runners[reservation_id]
             runner_locker.instance.context = context
             runner_locker.instance.logger = logger
             runner_locker.instance.api = api
         return runner_locker
+
+    def close_all_runners(self):
+        for runner in self._runners:
+            runner.close()

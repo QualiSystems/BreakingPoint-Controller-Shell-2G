@@ -1,12 +1,13 @@
 from collections import defaultdict
 from bp_controller.flows.bp_port_reservation_flow import BPPortReservationFlow
+from bp_controller.utils.file_based_lock import FileBasedLock
 from cloudshell.tg.breaking_point.bp_exception import BPException
-from cloudshell.tg.breaking_point.runners.exceptions import BPRunnerException
 
 
 class PortReservationHelper(object):
     GROUP_MIN = 1
     GROUP_MAX = 12
+    LOCK_FILE = '.port_reservation.lock'
 
     def __init__(self, session_manager, cs_reservation_details, logger):
         """
@@ -39,6 +40,10 @@ class PortReservationHelper(object):
         return self.__reservation_flow
 
     def _get_groups_info(self):
+        """
+        Collect information regarding used groups
+        :return:
+        """
         groups_info = defaultdict(list)
         for port_info in self._reservation_flow.port_status():
             group_id = port_info.get('group')
@@ -47,27 +52,39 @@ class PortReservationHelper(object):
         return groups_info
 
     def _find_not_used_group_id(self):
+        """
+        Find not used group id
+        :return:
+        """
         available_groups = list(
             set([i for i in xrange(self.GROUP_MIN, self.GROUP_MAX + 1)]) - set(self._get_groups_info().keys()))
         if len(available_groups) > 0:
             group_id = sorted(available_groups)[0]
         else:
-            raise Exception(self.__class__.__name__, 'Not available groups to reserve')
+            raise BPException(self.__class__.__name__, 'Cannot find unused group id')
         return group_id
 
-    def _find_used_group_id(self, port_order):
-        appropriate_group = None
+    def _find_used_ports(self, port_order):
+        """
+        Find port usage
+        :param port_order:
+        :return:
+        """
+        used_ports = []
         groups_info = self._get_groups_info()
         port_order_set = set(port_order)
-        for group, ports in groups_info.iteritems():
-            ports_set = set(ports)
-            if port_order_set == ports_set:
-                appropriate_group = group
-                break
-        return appropriate_group
+        for ports in groups_info.values():
+            used_ports_set = set(ports) & port_order_set
+            used_ports.extend(list(used_ports_set))
+        return used_ports
 
-    def reserve_ports(self, network_name, interfaces):
-        # associating ports
+    def _build_reservation_order(self, network_name, interfaces):
+        """
+        Associate BP interfaces with CS ports and build reservation order
+        :param network_name:
+        :param interfaces:
+        :return:
+        """
         bp_test_interfaces = self._reservation_flow.get_interfaces(network_name) if network_name else {}
         cs_reserved_ports = self._cs_reservation_details.get_chassis_ports()
 
@@ -80,29 +97,34 @@ class PortReservationHelper(object):
                 self._logger.debug('Associating interface {}'.format(bp_interface))
                 reservation_order.append(cs_reserved_ports[bp_interface])
             else:
-                raise BPRunnerException(self.__class__.__name__,
-                                        'Cannot find Port with Logical name {} in the reservation'.format(bp_interface))
+                raise BPException(self.__class__.__name__,
+                                  'Cannot find Port with Logical name {} in the reservation'.format(bp_interface))
+        return reservation_order
 
-        # Find correct group and reserve
-        if self.__group_id is not None:
-            not_used_ports = set(self.__reserved_ports) - set(reservation_order)
-            self._reservation_flow.unreserve_ports(not_used_ports)
+    def reserve_ports(self, network_name, interfaces):
+        """
+        Reserve ports
+        :param network_name:
+        :param interfaces:
+        :return:
+        """
 
-            to_be_reserved = set(reservation_order) - set(self.__reserved_ports)
-            self._reservation_flow.reserve_ports(self.__group_id, to_be_reserved)
+        reservation_order = self._build_reservation_order(network_name, interfaces)
 
+        # Unreserve used ports and reserve new port order
+        with FileBasedLock(self.LOCK_FILE):
+            self.unreserve_ports()
+            used_ports = self._find_used_ports(reservation_order)
+            self._reservation_flow.unreserve_ports(used_ports)
+            self.__group_id = self._find_not_used_group_id()
+            self._reservation_flow.reserve_ports(self.__group_id, reservation_order)
             self.__reserved_ports = reservation_order
-        else:
-            used_group_id = self._find_used_group_id(reservation_order)
-            if used_group_id is None:
-                self.__group_id = self._find_not_used_group_id()
-                self._reservation_flow.reserve_ports(self.__group_id, reservation_order)
-            else:
-                self.__group_id = used_group_id
-        self.__reserved_ports = reservation_order
-        return self.__group_id
 
     def unreserve_ports(self):
+        """
+        Unreserve ports
+        :return:
+        """
         self.__group_id = None
         if self.__reserved_ports:
             self._reservation_flow.unreserve_ports(self.__reserved_ports)

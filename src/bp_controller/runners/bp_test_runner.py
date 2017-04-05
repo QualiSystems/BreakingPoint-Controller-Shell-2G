@@ -115,10 +115,8 @@ class BPTestRunner(BPRunner):
                                                                     self._port_reservation_helper.group_id)
             if blocking.lower() == 'true':
                 self._test_execution_flow.block_while_test_running(self._test_id)
-                # ports = self.reservation_info.unreserve(self._context.reservation.reservation_id)
                 self._port_reservation_helper.unreserve_ports()
-        except Exception:
-            # ports = self.reservation_info.unreserve(self._context.reservation.reservation_id)
+        except:
             self._port_reservation_helper.unreserve_ports()
             raise
 
@@ -175,6 +173,5 @@ class BPTestRunner(BPRunner):
 
     def close(self):
         reservation_id = self._context.reservation.reservation_id
-        self._logger.debug('Close session with reservation ID: '.format(reservation_id))
-        # ports = self.reservation_info.unreserve(reservation_id)
+        self._logger.debug('Close session for reservation ID: '.format(reservation_id))
         self._port_reservation_helper.unreserve_ports()

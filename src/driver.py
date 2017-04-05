@@ -31,13 +31,6 @@ class BreakingPointControllerDriver(ResourceDriverInterface):
         with self._runners_pool.actual_runner(context) as runner:
             return runner.load_pcap(pcap_file_location.replace('"', ''))
 
-    # def send_arp(self, context):
-    #     """ Send ARP for all objects (ports, devices, streams)
-    #     :param context: the context the command runs on
-    #     :type context: cloudshell.shell.core.driver_context.ResourceRemoteCommandContext
-    #     """
-    #     pass
-
     def start_traffic(self, context, blocking):
         """
         :param context: the context the command runs on
@@ -64,9 +57,10 @@ class BreakingPointControllerDriver(ResourceDriverInterface):
             return runner.get_results()
 
     def cleanup(self):
-        pass
+        self._runners_pool.close_all_runners()
 
     def keep_alive(self, context, cancellation_context):
+        pass
         # logger = get_logger_with_thread_id(context)
         # logger.debug(context)
         # if hasattr(context, 'reservation'):
@@ -74,6 +68,6 @@ class BreakingPointControllerDriver(ResourceDriverInterface):
         # while not cancellation_context.is_cancelled:
         #     time.sleep(1)
 
-        with self._runners_pool.actual_runner(context) as runner:
-            return runner.close()
+        # with self._runners_pool.actual_runner(context) as runner:
+        #     return runner.close()
         # raise Exception(self.__class__.__name__, 'Keepalive canceled, {}'.format(context.reservation.reservation_id))
