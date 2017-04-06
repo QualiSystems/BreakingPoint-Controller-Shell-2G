@@ -1,7 +1,7 @@
 from threading import Lock
 
 from bp_controller.runners.bp_test_runner import BPTestRunner
-from cloudshell.devices.driver_helper import get_logger_with_thread_id, get_api
+from cloudshell.tg.breaking_point.helpers.context_utils import get_logger_with_thread_id, get_api
 
 
 class InstanceLocker(object):

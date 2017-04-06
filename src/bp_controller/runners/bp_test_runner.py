@@ -125,6 +125,7 @@ class BPTestRunner(BPRunner):
             raise BPRunnerException(self.__class__.__name__, 'Test id is not defined, run the test first')
         self._test_execution_flow.stop_traffic(self._test_id)
         self._port_reservation_helper.unreserve_ports()
+        self._test_name = None
 
     def get_statistics(self, view_name, output_format):
         if not self._test_id:
