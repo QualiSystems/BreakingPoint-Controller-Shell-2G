@@ -1,5 +1,6 @@
 from collections import defaultdict
 from bp_controller.flows.bp_port_reservation_flow import BPPortReservationFlow
+from bp_controller.helpers.bp_cs_reservation_details import BPCSReservationDetails
 from bp_controller.utils.file_based_lock import FileBasedLock
 from cloudshell.tg.breaking_point.bp_exception import BPException
 
@@ -14,6 +15,7 @@ class PortReservationHelper(object):
         :param session_manager:
         :type
         :param cs_reservation_details:
+        :type cs_reservation_details: BPCSReservationDetails
         :param logger:
         :return:
         """

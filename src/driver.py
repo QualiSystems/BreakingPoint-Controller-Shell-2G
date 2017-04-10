@@ -27,9 +27,9 @@ class BreakingPointControllerDriver(ResourceDriverInterface):
         with self._runners_pool.actual_runner(context) as runner:
             return runner.load_configuration(config_file_location.replace('"', ''))
 
-    def load_pcap(self, context, pcap_file_location):
-        with self._runners_pool.actual_runner(context) as runner:
-            return runner.load_pcap(pcap_file_location.replace('"', ''))
+    # def load_pcap(self, context, pcap_file_location):
+    #     with self._runners_pool.actual_runner(context) as runner:
+    #         return runner.load_pcap(pcap_file_location.replace('"', ''))
 
     def start_traffic(self, context, blocking):
         """

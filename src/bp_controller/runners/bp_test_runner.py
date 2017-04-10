@@ -69,7 +69,7 @@ class BPTestRunner(BPRunner):
     def _cs_reservation_details(self):
         """
         :return:
-        :rtype: BPReservationDetails
+        :rtype: BPCSReservationDetails
         """
         if not self.__reservation_details:
             self.__reservation_details = BPCSReservationDetails(self.context, self.logger, self.api)
@@ -78,6 +78,18 @@ class BPTestRunner(BPRunner):
             self.__reservation_details.context = self.context
             self.__reservation_details.logger = self.logger
         return self.__reservation_details
+
+    @property
+    def _resource_address(self):
+        return self._cs_reservation_details.get_chassis_address()
+
+    @property
+    def _username(self):
+        return self._cs_reservation_details.get_chassis_user()
+
+    @property
+    def _password(self):
+        return self._cs_reservation_details.get_chassis_password()
 
     @property
     def _port_reservation_helper(self):

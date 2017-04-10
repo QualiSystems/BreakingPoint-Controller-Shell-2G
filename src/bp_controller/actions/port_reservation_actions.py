@@ -15,13 +15,11 @@ class PortReservationActions(object):
         self._logger = logger
 
     def port_status(self):
-        self._logger.debug('Port status')
         uri = '/api/v1/bps/ports'
         data = self._rest_service.request_get(uri)
         result = data.get('portReservationState')
-        self._logger.info(result)
+        self._logger.debug('Port status {}'.format(result))
         return result
-
 
     def reserve_port(self, slot, port_list, group):
         self._logger.debug('Reserving ports {0} on slot {1} for group {2}'.format(port_list, slot, group))
@@ -30,7 +28,7 @@ class PortReservationActions(object):
         self._logger.info(json_data)
         data = self._rest_service.request_post(uri, json_data)
         result = data
-        self._logger.info(result)
+        self._logger.debug(str(result))
         return result
 
     def unreserve_port(self, slot, port_list):
@@ -39,5 +37,5 @@ class PortReservationActions(object):
         json_data = {"slot": slot, "portList": port_list}
         data = self._rest_service.request_post(uri, json_data)
         result = data
-        self._logger.info(result)
+        self._logger.debug(str(result))
         return result
