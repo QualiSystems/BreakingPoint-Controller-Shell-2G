@@ -15,11 +15,6 @@ class BPCSReservationDetails(object):
         self._logger = logger
         self._api = api
 
-        self.__chassis_address = None
-        self.__chassis_name = None
-        self.__chassis_user = None
-        self.__chassis_password = None
-
     @property
     def context(self):
         return self._context
@@ -63,6 +58,7 @@ class BPCSReservationDetails(object):
         return self.api.GetReservationDetails(reservationId=reservation_id)
 
     def get_chassis_ports(self):
+        self.logger.debug('Api: {}'.format(self.api))
         reserved_ports = {}
         port_pattern = r'{}/M(?P<module>\d+)/P(?P<port>\d+)'.format(self.get_chassis_address())
         for resource in self._get_reservation_details().ReservationDescription.Resources:

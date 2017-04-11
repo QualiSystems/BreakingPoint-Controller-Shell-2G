@@ -10,7 +10,7 @@ from cloudshell.tg.breaking_point.flows.bp_flow import BPFlow
 
 class BPPortReservationFlow(BPFlow):
     def port_status(self):
-        with self._session_manager.get_session() as rest_service:
+        with self._session_context_manager as rest_service:
             port_reservation = PortReservationActions(rest_service, self._logger)
             ports_info = port_reservation.port_status()
             port_expression = r'\[slot=(?P<slot>\d+),port=(?P<port>\d+)\]=\d+' \
@@ -23,7 +23,7 @@ class BPPortReservationFlow(BPFlow):
 
     def get_interfaces(self, network_name):
         if network_name:
-            with self._session_manager.get_session() as rest_service:
+            with self._session_context_manager as rest_service:
                 test_network_actions = TestNetworkActions(rest_service, self._logger)
                 network_info = test_network_actions.get_network_neighborhood(network_name)
             test_interfaces = {}
@@ -40,14 +40,14 @@ class BPPortReservationFlow(BPFlow):
             raise BPFlowException(self.__class__.__name__, 'Network name cannot be empty')
 
     def reserve_ports(self, group, ports):
-        with self._session_manager.get_session() as rest_service:
+        with self._session_context_manager as rest_service:
             port_reservation = PortReservationActions(rest_service, self._logger)
             results = []
             for slot, port in ports:
                 result = port_reservation.reserve_port(slot, [port], group)
 
     def unreserve_ports(self, ports):
-        with self._session_manager.get_session() as rest_service:
+        with self._session_context_manager as rest_service:
             port_reservation = PortReservationActions(rest_service, self._logger)
             results = []
             for slot, port in ports:

@@ -10,7 +10,7 @@ class PortReservationHelper(object):
     GROUP_MAX = 12
     LOCK_FILE = '.port_reservation.lock'
 
-    def __init__(self, session_manager, cs_reservation_details, logger):
+    def __init__(self, session_context_manager, cs_reservation_details, logger):
         """
         :param session_manager:
         :type
@@ -19,7 +19,7 @@ class PortReservationHelper(object):
         :param logger:
         :return:
         """
-        self._session_manager = session_manager
+        self._session_context_manager = session_context_manager
         self._logger = logger
         self._cs_reservation_details = cs_reservation_details
 
@@ -38,7 +38,7 @@ class PortReservationHelper(object):
         :rtype: BPPortReservationFlow
         """
         if not self.__reservation_flow:
-            self.__reservation_flow = BPPortReservationFlow(self._session_manager, self._logger)
+            self.__reservation_flow = BPPortReservationFlow(self._session_context_manager, self._logger)
         return self.__reservation_flow
 
     def _get_groups_info(self):

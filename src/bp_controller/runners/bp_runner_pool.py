@@ -48,6 +48,8 @@ class BPRunnersPool(object):
         logger = get_logger_with_thread_id(context)
         api = get_api(context)
 
+        logger.debug('Token: {}'.format(context.connectivity.admin_auth_token))
+
         reservation_id = context.reservation.reservation_id
         if reservation_id not in self._runners:
             logger.info("Created new runner for {0}".format(reservation_id))
