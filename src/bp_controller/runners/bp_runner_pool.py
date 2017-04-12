@@ -58,9 +58,9 @@ class BPRunnersPool(object):
         else:
             logger.info("Getting existing runner for {0}".format(reservation_id))
             runner_locker = self._runners[reservation_id]
-            runner_locker.instance.context = context
             runner_locker.instance.logger = logger
             runner_locker.instance.api = api
+            runner_locker.instance.context = context
         return runner_locker
 
     def close_all_runners(self):

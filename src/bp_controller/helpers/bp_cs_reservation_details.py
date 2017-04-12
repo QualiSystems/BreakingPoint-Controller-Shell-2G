@@ -54,6 +54,7 @@ class BPCSReservationDetails(object):
         raise BPException(self.__class__.__name__, 'Cannot find {0} in this reservation'.format(self.CHASSIS_FAMILY))
 
     def _get_reservation_details(self):
+        self.logger.debug('API instance: {}'.format(self.api))
         reservation_id = self.context.reservation.reservation_id
         return self.api.GetReservationDetails(reservationId=reservation_id)
 

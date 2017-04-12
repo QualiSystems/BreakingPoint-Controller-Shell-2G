@@ -12,7 +12,8 @@ from bp_controller.flows.bp_results_flow import BPResultsFlow
 from bp_controller.flows.bp_statistics_flow import BPStatisticsFlow
 from bp_controller.flows.bp_test_execution_flow import BPTestExecutionFlow
 from bp_controller.helpers.bp_cs_reservation_details import BPCSReservationDetails
-from bp_controller.helpers.quali_rest_api_helper import QualiAPIHelper
+from bp_controller.helpers.quali_rest_api_helper import QualiAPIHelper, create_quali_api_instance
+from cloudshell.tg.breaking_point.rest_api.rest_json_client import RestClientUnauthorizedException
 from cloudshell.tg.breaking_point.runners.bp_runner import BPRunner
 from cloudshell.tg.breaking_point.runners.exceptions import BPRunnerException
 
@@ -37,16 +38,31 @@ class BPTestRunner(BPRunner):
 
     @BPRunner.context.setter
     def context(self, value):
+        """
+        Override setter for context
+        :param value: 
+        :return: 
+        """
         BPRunner.context.fset(self, value)
         self._cs_reservation_details.context = value
 
     @BPRunner.logger.setter
     def logger(self, value):
+        """
+        Override setter for logger
+        :param value: 
+        :return: 
+        """
         BPRunner.logger.fset(self, value)
         self._cs_reservation_details.logger = value
 
     @BPRunner.api.setter
     def api(self, value):
+        """
+        Override setter for api
+        :param value: 
+        :return: 
+        """
         BPRunner.api.fset(self, value)
         self._cs_reservation_details.api = value
 
@@ -74,7 +90,7 @@ class BPTestRunner(BPRunner):
     def _test_results_flow(self):
         """
         :return:
-        :rtype: BPStatisticsFlow
+        :rtype: BPResultsFlow
         """
         if not self.__test_results_flow:
             self.__test_results_flow = BPResultsFlow(self._session_context_manager, self.logger)
@@ -92,28 +108,47 @@ class BPTestRunner(BPRunner):
 
     @property
     def _resource_address(self):
+        """
+        Override property for resource address
+        :return: 
+        """
         return self._cs_reservation_details.get_chassis_address()
 
     @property
     def _username(self):
+        """
+        Override property for username
+        :return: 
+        """
         return self._cs_reservation_details.get_chassis_user()
 
     @property
     def _password(self):
+        """
+        Override property for password
+        :return: 
+        """
         return self._cs_reservation_details.get_chassis_password()
 
     @property
     def _port_reservation_helper(self):
         """
+        Port reservation operations
         :return:
         :rtype: PortReservationHelper
         """
         if not self.__port_reservation_helper:
-            self.__port_reservation_helper = PortReservationHelper(self._session_context_manager, self._cs_reservation_details,
+            self.__port_reservation_helper = PortReservationHelper(self._session_context_manager,
+                                                                   self._cs_reservation_details,
                                                                    self.logger)
         return self.__port_reservation_helper
 
     def load_configuration(self, file_path):
+        """
+        Upload configuration file and reserve ports
+        :param file_path: 
+        :return: 
+        """
         self._test_name = BPLoadConfigurationFileFlow(self._session_context_manager,
                                                       self.logger).load_configuration(file_path)
         test_model = ElementTree.parse(file_path).getroot().find('testmodel')
@@ -131,6 +166,11 @@ class BPTestRunner(BPRunner):
             raise BPRunnerException(self.__class__.__name__, 'Unable to load pcap file')
 
     def start_traffic(self, blocking):
+        """
+        Start traffic
+        :param blocking: 
+        :return: 
+        """
         if not self._test_name:
             raise BPRunnerException(self.__class__.__name__, 'Load configuration first')
         try:
@@ -139,11 +179,17 @@ class BPTestRunner(BPRunner):
             if blocking.lower() == 'true':
                 self._test_execution_flow.block_while_test_running(self._test_id)
                 self._port_reservation_helper.unreserve_ports()
+        except RestClientUnauthorizedException:
+            raise
         except:
             self._port_reservation_helper.unreserve_ports()
             raise
 
     def stop_traffic(self):
+        """
+        Stop traffic
+        :return: 
+        """
         if not self._test_id:
             raise BPRunnerException(self.__class__.__name__, 'Test id is not defined, run the test first')
         self._test_execution_flow.stop_traffic(self._test_id)
@@ -151,6 +197,12 @@ class BPTestRunner(BPRunner):
         self._test_name = None
 
     def get_statistics(self, view_name, output_format):
+        """
+        Real time statistics
+        :param view_name: 
+        :param output_format: 
+        :return: 
+        """
         if not self._test_id:
             raise BPRunnerException(self.__class__.__name__, 'Test id is not defined, run the test first')
         result = self._test_statistics_flow.get_rt_statistics(self._test_id, view_name)
@@ -172,30 +224,27 @@ class BPTestRunner(BPRunner):
         return statistics
 
     def get_results(self):
+        """
+        Get test result file and attache it to reservation
+        :return: 
+        """
         if not self._test_id:
             raise BPRunnerException(self.__class__.__name__, 'Test id is not defined, run the test first')
         pdf_result = self._test_results_flow.get_results(self._test_id)
-        domain = "Global"
-        if hasattr(self.context, 'reservation') and self.context.reservation:
-            domain = self.context.reservation.domain
-
-        if hasattr(self.context, 'remote_reservation') and self.context.remote_reservation:
-            domain = self.context.remote_reservation.domain
-
-        quali_api_helper = QualiAPIHelper(self.logger, self.context.connectivity.server_address, domain)
-        quali_api_helper.login(self.context.connectivity.admin_auth_token)
+        quali_api_helper = create_quali_api_instance(self.context, self.logger)
+        quali_api_helper.login()
         env_name = re.sub("\s+", "_", self.context.reservation.environment_name)
         test_id = re.sub("\s+", "_", self._test_id)
         file_name = "{0}_{1}.pdf".format(env_name, test_id)
-        save_file_name = "D:\\tests\\reports\\{0}.pdf".format(self.context.reservation.reservation_id)
         quali_api_helper.upload_file(self.context.reservation.reservation_id, file_name=file_name,
                                      file_stream=pdf_result)
-        with open(save_file_name, 'w') as result_file:
-            result_file.write(pdf_result)
-
         return "Please check attachments for results"
 
     def close(self):
+        """
+        Destroy
+        :return: 
+        """
         reservation_id = self.context.reservation.reservation_id
         self.logger.debug('Close session for reservation ID: '.format(reservation_id))
         self._port_reservation_helper.unreserve_ports()
