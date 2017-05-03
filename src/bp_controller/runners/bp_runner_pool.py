@@ -64,5 +64,5 @@ class BPRunnersPool(object):
         return runner_locker
 
     def close_all_runners(self):
-        for runner in self._runners:
+        for runner in self._runners.values():
             runner.close()
