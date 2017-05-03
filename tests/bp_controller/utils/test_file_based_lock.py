@@ -10,7 +10,8 @@ class TestFileBasedLock(TestCase):
         self._file_descriptor = Mock()
         self._instance = self._create_instance()
 
-    @patch('bp_controller.utils.file_based_lock.open')
+    # @patch('bp_controller.utils.file_based_lock.open')
+    @patch('__builtin__.open')
     def _create_instance(self, open_func):
         open_func.return_value = self._file_descriptor
         instance = FileBasedLock(self._file_path)
