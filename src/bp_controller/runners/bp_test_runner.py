@@ -33,6 +33,7 @@ class BPTestRunner(BPRunner):
         self.__test_execution_flow = None
         self.__test_statistics_flow = None
         self.__test_results_flow = None
+        self.__test_configuration_file_flow = None
         self.__reservation_details = None
         self.__port_reservation_helper = None
 
@@ -97,6 +98,13 @@ class BPTestRunner(BPRunner):
         return self.__test_results_flow
 
     @property
+    def _test_configuration_file_flow(self):
+        if not self.__test_configuration_file_flow:
+            self.__test_configuration_file_flow = BPLoadConfigurationFileFlow(self._session_context_manager,
+                                                                              self.logger)
+        return self.__test_configuration_file_flow
+
+    @property
     def _cs_reservation_details(self):
         """
         :return:
@@ -149,8 +157,7 @@ class BPTestRunner(BPRunner):
         :param file_path: 
         :return: 
         """
-        self._test_name = BPLoadConfigurationFileFlow(self._session_context_manager,
-                                                      self.logger).load_configuration(file_path)
+        self._test_name = self._test_configuration_file_flow.load_configuration(file_path)
         test_model = ElementTree.parse(file_path).getroot().find('testmodel')
         network_name = test_model.get('network')
         interfaces = []
