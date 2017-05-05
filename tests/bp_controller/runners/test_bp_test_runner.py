@@ -1,3 +1,5 @@
+import re
+
 from mock import Mock, patch, PropertyMock
 from unittest2 import TestCase
 
@@ -336,3 +338,54 @@ class TestBPTestRunner(TestCase):
         self._instance._test_id = test_id
         self.assertIs(self._instance.get_statistics(view_name, 'CSV'), statistics)
         test_statistics_flow.get_rt_statistics.assert_called_once_with(test_id, view_name)
+        io.BytesIO.assert_called_once_with()
+        csv.DictWriter.assert_called_once_with(output, keys)
+        w.writeheader.assert_called_once_with()
+        w.writerow.assert_called_once_with(result)
+        output.getvalue.assert_called_once_with()
+        getvalue_strip_mock.strip.assert_called_once_with('\r\n')
+
+    @patch('bp_controller.runners.bp_test_runner.BPTestRunner._test_statistics_flow', new_callable=PropertyMock)
+    def test_get_statistics_incorrect_format(self, test_statistics_flow_prop):
+        test_statistics_flow = Mock()
+        result = Mock()
+        test_statistics_flow_prop.return_value = test_statistics_flow
+        test_statistics_flow.get_rt_statistics.return_value = result
+        view_name = Mock()
+        test_id = Mock()
+        self._instance._test_id = test_id
+        with self.assertRaisesRegex(BPRunnerException, 'Incorrect file format'):
+            self._instance.get_statistics(view_name, 'Incorrect')
+        test_statistics_flow.get_rt_statistics.assert_called_once_with(test_id, view_name)
+
+    def test_get_results_not_test_id(self):
+        with self.assertRaisesRegex(BPRunnerException, 'Test id is not defined'):
+            self._instance.get_results()
+
+    @patch('bp_controller.runners.bp_test_runner.BPTestRunner._test_results_flow', new_callable=PropertyMock)
+    @patch('bp_controller.runners.bp_test_runner.create_quali_api_instance')
+    def test_get_results_flow(self, create_quali_api_instance, test_results_flow_prop):
+        quali_api = Mock()
+        create_quali_api_instance.return_value = quali_api
+        test_results_flow = Mock()
+        test_results_flow_prop.return_value = test_results_flow
+        test_id = 'test_id'
+        env_name = 'env_name'
+        result = Mock()
+        test_results_flow.get_results.return_value = result
+        self._instance._test_id = test_id
+        self._context.reservation.environment_name = env_name
+        self._instance.get_results()
+        test_results_flow.get_results.assert_called_once_with(test_id)
+        create_quali_api_instance.assert_called_once_with(self._context, self._logger)
+        quali_api.login.assert_called_once_with()
+        env_name = re.sub("\s+", "_", env_name)
+        test_id = re.sub("\s+", "_", test_id)
+        file_name = "{0}_{1}.pdf".format(env_name, test_id)
+        quali_api.upload_file.assert_called_once_with(self._context.reservation.reservation_id, file_name=file_name,
+                                                      file_stream=result)
+
+    @patch('bp_controller.runners.bp_test_runner.BPTestRunner._port_reservation_helper', new_callable=PropertyMock)
+    def test_close(self, port_reservation_helper_prop):
+        self._context.reservation.reservation_id = 'test'
+        port_reservation_helper_prop.unreserve_ports.assewrt_called_once_with()
