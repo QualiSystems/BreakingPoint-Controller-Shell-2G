@@ -21,7 +21,7 @@ class TestStatisticsActions(object):
     def get_real_time_statistics(self, test_id, stats_group='summary'):
         self._logger.debug('Get RTS, testID {0}, {1}'.format(test_id, stats_group))
         stats_groups = ['summary', 'iface', 'l4stats', 'sslstats', 'ipsecstats', 'l7stats',
-                        'clientstats', 'attackstats', 'gtp', 'resource']
+                        'clientstats', 'attacksstats', 'gtp', 'resource']
         if stats_group.lower() not in stats_groups:
             raise RestActionsException(self.__class__.__name__,
                                        'Incorrect stats group {0}, supported groups {1}'.format(stats_group,
