@@ -77,6 +77,16 @@ class BreakingPointControllerDriver(ResourceDriverInterface):
         with self._runners_pool.actual_runner(context) as runner:
             return runner.get_results()
 
+    def get_test_file(self, context, test_name):
+        """
+        Download test file configuration and put to the folder defined in Test Files Location attribute
+        :param context: 
+        :param test_name: Name of the test
+        :return: 
+        """
+        with self._runners_pool.actual_runner(context) as runner:
+            return runner.get_test_file(test_name)
+
     def cleanup(self):
         """
         Close runners
