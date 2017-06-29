@@ -1,6 +1,6 @@
 import re
 
-from mock import Mock, patch, PropertyMock
+from mock import Mock, patch, PropertyMock, call
 from unittest2 import TestCase
 
 from bp_controller.runners.bp_test_runner import BPTestRunner
@@ -171,6 +171,8 @@ class TestBPTestRunner(TestCase):
     @patch('bp_controller.runners.bp_test_runner.BPTestRunner._port_reservation_helper', new_callable=PropertyMock)
     @patch('bp_controller.runners.bp_test_runner.ElementTree')
     def test_load_configuration(self, element_tree_class, port_reservation_helper_prop, configuration_file_flow_prop):
+        file_path = Mock()
+        self._instance._get_existing_path = Mock(return_value=file_path)
         port_reservation_helper = Mock()
         configuration_file_flow = Mock()
         port_reservation_helper_prop.return_value = port_reservation_helper
@@ -188,7 +190,6 @@ class TestBPTestRunner(TestCase):
         interface = Mock()
         test_model.findall.return_value = [interface]
         interface.get.return_value = '3'
-        file_path = Mock()
         self._instance.load_configuration(file_path)
         configuration_file_flow.load_configuration.assert_called_once_with(file_path)
         self.assertIs(self._instance._test_name, test_name)
@@ -389,3 +390,23 @@ class TestBPTestRunner(TestCase):
     def test_close(self, port_reservation_helper_prop):
         self._context.reservation.reservation_id = 'test'
         port_reservation_helper_prop.unreserve_ports.assewrt_called_once_with()
+
+    @patch('bp_controller.runners.bp_test_runner.os')
+    def test_get_existing_path(self, os_instance):
+        path1 = Mock()
+        path2 = Mock()
+        os_instance.path.join.return_value = path2
+        os_instance.path.exists.side_effect = [False, True]
+        self.assertIs(self._instance._get_existing_path(path1), path1)
+        os_instance.path.join.assert_called_once_with(self._context.resource.attributes.get('Test Files Location'),
+                                                      path1)
+        os_instance.path.exists.assert_has_calls([call(path2), call(path1)])
+
+    @patch('bp_controller.runners.bp_test_runner.os')
+    def test_get_existing_path_exception(self, os_instance):
+        path1 = Mock()
+        path2 = Mock()
+        os_instance.path.join.return_value = path2
+        os_instance.path.exists.side_effect = [False, False]
+        with self.assertRaisesRegex(BPRunnerException, 'does not exists'):
+            self._instance._get_existing_path(path1)
