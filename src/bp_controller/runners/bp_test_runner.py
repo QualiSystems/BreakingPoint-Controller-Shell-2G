@@ -1,5 +1,8 @@
 import csv
 import json
+import os
+
+from bp_controller.flows.bp_download_test_file_flow import BPDownloadTestFileFlow
 from bp_controller.helpers.port_reservation_helper import PortReservationHelper
 import re
 
@@ -34,6 +37,7 @@ class BPTestRunner(BPRunner):
         self.__test_statistics_flow = None
         self.__test_results_flow = None
         self.__test_configuration_file_flow = None
+        self.__download_test_file_flow = None
         self.__reservation_details = None
         self.__port_reservation_helper = None
 
@@ -105,6 +109,13 @@ class BPTestRunner(BPRunner):
         return self.__test_configuration_file_flow
 
     @property
+    def _download_test_file_flow(self):
+        if not self.__download_test_file_flow:
+            self.__download_test_file_flow = BPDownloadTestFileFlow(self._session_context_manager,
+                                                                    self.logger)
+        return self.__download_test_file_flow
+
+    @property
     def _cs_reservation_details(self):
         """
         :return:
@@ -151,12 +162,29 @@ class BPTestRunner(BPRunner):
                                                                    self.logger)
         return self.__port_reservation_helper
 
+    def _get_existing_path(self, file_path):
+        """
+        Looking for existing path
+        :return:
+        :rtype: basestring
+        """
+        search_order = [os.path.join(self.context.resource.attributes.get('Test Files Location') or '', file_path),
+                        file_path]
+        for path in search_order:
+            if os.path.exists(path):
+                return path
+        raise BPRunnerException(self.__class__.__name__,
+                                'File {} does not exists or "Test Files Location" attribute was not specified'.format(
+                                    file_path))
+
     def load_configuration(self, file_path):
         """
         Upload configuration file and reserve ports
         :param file_path: 
         :return: 
         """
+        file_path = self._get_existing_path(file_path)
+
         self._test_name = self._test_configuration_file_flow.load_configuration(file_path)
         test_model = ElementTree.parse(file_path).getroot().find('testmodel')
         network_name = test_model.get('network')
@@ -246,6 +274,23 @@ class BPTestRunner(BPRunner):
         quali_api_helper.upload_file(self.context.reservation.reservation_id, file_name=file_name,
                                      file_stream=pdf_result)
         return "Please check attachments for results"
+
+    def get_test_file(self, test_name):
+        test_files_location = self.context.resource.attributes.get('Test Files Location')
+        if not test_files_location:
+            raise BPRunnerException(self.__class__.__name__, "Test Files Location attribute is not defined")
+        if not os.path.exists(test_files_location) or os.access(test_files_location, os.W_OK) is not True:
+            raise BPRunnerException(self.__class__.__name__,
+                                    'The location of the test files "{}" does not exist or is not writable'.format(
+                                        test_files_location))
+        reservation_files = os.path.join(test_files_location, self.context.reservation.reservation_id)
+        if not os.path.exists(reservation_files):
+            os.makedirs(reservation_files)
+        test_file_path = os.path.join(reservation_files, test_name + '.bpt', )
+        test_file_content = self._download_test_file_flow.download_test_file(test_name)
+        with open(test_file_path, 'w') as f:
+            f.write(test_file_content)
+        return test_file_path
 
     def close(self):
         """

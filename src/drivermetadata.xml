@@ -38,5 +38,12 @@
                            DisplayName="Output Type" DefaultValue="csv" Description="CSV or JSON"/>
             </Parameters>
         </Command>
+        <Command Name="get_test_file" DisplayName="Get Test File" Description="Download test file to the folder specified in the Test Files Location attribute">
+            <Parameters>
+                <Parameter Name="test_name" Type="String" Mandatory="True"
+                           DisplayName="Test Name"
+                           Description="Name of the Test"/>
+            </Parameters>
+        </Command>
     </Layout>
 </Driver>

@@ -75,6 +75,14 @@ class TestDriver(TestCase):
         self._runners_pool.actual_runner.assert_called_once_with(self._context)
         self._runner.get_results.assert_called_once_with()
 
+    def test_get_test_file(self):
+        result = Mock()
+        self._runner.get_test_file.return_value = result
+        test_name = Mock()
+        self.assertIs(self._instance.get_test_file(self._context, test_name), result)
+        self._runners_pool.actual_runner.assert_called_once_with(self._context)
+        self._runner.get_test_file.assert_called_once_with(test_name)
+
     def test_cleanup(self):
         self._instance.cleanup()
         self._runners_pool.close_all_runners.assert_called_once_with()

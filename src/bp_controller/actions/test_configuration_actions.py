@@ -54,8 +54,8 @@ class TestConfigurationActions(object):
     def export_test(self, test_name):
         self._logger.debug('Exporting test {0}'.format(test_name))
         uri = '/api/v1/bps/export/bpt/testname/' + test_name
-        data = self._rest_service.request_get(uri)
-        result = data
+        data = self._rest_service.request_get_files(uri)
+        result = data.content
         return result
 
     def reserve_port(self, slot, port_list):
