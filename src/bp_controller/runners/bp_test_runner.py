@@ -253,7 +253,7 @@ class BPTestRunner(BPRunner):
 
     def get_results(self):
         """
-        Get test result file and attache it to reservation
+        Get test result file and attache it to the reservation
         :return: 
         """
         if not self._test_id:
@@ -269,6 +269,11 @@ class BPTestRunner(BPRunner):
         return "Please check attachments for results"
 
     def get_test_file(self, test_name):
+        """
+        Download test file from BP
+        :param test_name: 
+        :return: 
+        """
         test_files_location = self.context.resource.attributes.get('Test Files Location')
         if not test_files_location:
             raise BPRunnerException(self.__class__.__name__, "Test Files Location attribute is not defined")
