@@ -241,7 +241,6 @@ class TestBPTestRunner(TestCase):
         self.assertIs(test_id, self._instance._test_id)
         test_execution_flow.start_traffic.assert_called_once_with(test_name, group_id)
         test_execution_flow.block_while_test_running.assert_called_once_with(test_id)
-        port_reservation_helper.unreserve_ports.assert_called_once_with()
 
     @patch('bp_controller.runners.bp_test_runner.BPTestRunner._port_reservation_helper', new_callable=PropertyMock)
     @patch('bp_controller.runners.bp_test_runner.BPTestRunner._test_execution_flow', new_callable=PropertyMock)
@@ -283,17 +282,11 @@ class TestBPTestRunner(TestCase):
     @patch('bp_controller.runners.bp_test_runner.BPTestRunner._test_execution_flow', new_callable=PropertyMock)
     def test_stop_traffic(self, test_execution_flow_prop, port_reservation_helper_prop):
         test_execution_flow = Mock()
-        port_reservation_helper = Mock()
         test_execution_flow_prop.return_value = test_execution_flow
-        port_reservation_helper_prop.return_value = port_reservation_helper
         test_id = Mock()
-        test_name = Mock()
         self._instance._test_id = test_id
-        self._instance._test_name = test_name
         self._instance.stop_traffic()
         test_execution_flow.stop_traffic.assert_called_once_with(test_id)
-        port_reservation_helper.unreserve_ports.assert_called_once_with()
-        self.assertIsNone(self._instance._test_name)
 
     def test_get_statistics_raises_exception(self):
         with self.assertRaisesRegex(BPRunnerException, 'Test id is not defined'):
@@ -395,18 +388,22 @@ class TestBPTestRunner(TestCase):
     def test_get_existing_path(self, os_instance):
         path1 = Mock()
         path2 = Mock()
-        os_instance.path.join.return_value = path2
-        os_instance.path.exists.side_effect = [False, True]
+        path3 = Mock()
+        os_instance.path.join.side_effect = [path2, path3]
+        os_instance.path.exists.side_effect = [False, False, True]
         self.assertIs(self._instance._get_existing_path(path1), path1)
-        os_instance.path.join.assert_called_once_with(self._context.resource.attributes.get('Test Files Location'),
-                                                      path1)
-        os_instance.path.exists.assert_has_calls([call(path2), call(path1)])
+        join_calls = [call(self._context.resource.attributes.get('Test Files Location'), path1),
+                      call(self._context.resource.attributes.get('Test Files Location'),
+                           self._context.reservation.reservation_id, path1)]
+        os_instance.path.join.assert_has_calls(join_calls)
+        os_instance.path.exists.assert_has_calls([call(path2), call(path3), call(path1)])
 
     @patch('bp_controller.runners.bp_test_runner.os')
     def test_get_existing_path_exception(self, os_instance):
         path1 = Mock()
         path2 = Mock()
-        os_instance.path.join.return_value = path2
-        os_instance.path.exists.side_effect = [False, False]
+        path3 = Mock()
+        os_instance.path.join.side_effect = [path2, path3]
+        os_instance.path.exists.side_effect = [False, False, False]
         with self.assertRaisesRegex(BPRunnerException, 'does not exists'):
             self._instance._get_existing_path(path1)
