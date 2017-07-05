@@ -90,8 +90,5 @@ class TestDriver(TestCase):
     def test_keep_alive(self):
         cancellation_context = Mock()
         cancellation_context.is_cancelled = True
-        result = Mock()
-        self._runner.close.return_value = result
-        self.assertIs(self._instance.keep_alive(self._context, cancellation_context), result)
-        self._runners_pool.actual_runner.assert_called_once_with(self._context)
-        self._runner.close.assert_called_once_with()
+        self._instance.keep_alive(self._context, cancellation_context)
+        self._runners_pool.close_all_runners.assert_called_once_with()

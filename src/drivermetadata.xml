@@ -3,6 +3,7 @@
     <Layout>
         <Category Name="Hidden Commands">
             <Command Name="keep_alive" DisplayName="Keep Alive" Tags="" Description="" EnableCancellation="true"/>
+            <Command Name="cleanup_reservation" DisplayName="Cleanup Reservation" Tags="" Description="" EnableCancellation="true"/>
         </Category>
         <Command Name="load_config" DisplayName="Load configuration" Description="Reserve ports and load configuration">
             <Parameters>

@@ -169,6 +169,8 @@ class BPTestRunner(BPRunner):
         :rtype: basestring
         """
         search_order = [os.path.join(self.context.resource.attributes.get('Test Files Location') or '', file_path),
+                        os.path.join(self.context.resource.attributes.get('Test Files Location') or '',
+                                     self.context.reservation.reservation_id, file_path),
                         file_path]
         for path in search_order:
             if os.path.exists(path):
@@ -208,17 +210,10 @@ class BPTestRunner(BPRunner):
         """
         if not self._test_name:
             raise BPRunnerException(self.__class__.__name__, 'Load configuration first')
-        try:
-            self._test_id = self._test_execution_flow.start_traffic(self._test_name,
-                                                                    self._port_reservation_helper.group_id)
-            if blocking.lower() == 'true':
-                self._test_execution_flow.block_while_test_running(self._test_id)
-                self._port_reservation_helper.unreserve_ports()
-        except RestClientUnauthorizedException:
-            raise
-        except:
-            self._port_reservation_helper.unreserve_ports()
-            raise
+        self._test_id = self._test_execution_flow.start_traffic(self._test_name,
+                                                                self._port_reservation_helper.group_id)
+        if blocking.lower() == 'true':
+            self._test_execution_flow.block_while_test_running(self._test_id)
 
     def stop_traffic(self):
         """
@@ -228,8 +223,6 @@ class BPTestRunner(BPRunner):
         if not self._test_id:
             raise BPRunnerException(self.__class__.__name__, 'Test id is not defined, run the test first')
         self._test_execution_flow.stop_traffic(self._test_id)
-        self._port_reservation_helper.unreserve_ports()
-        self._test_name = None
 
     def get_statistics(self, view_name, output_format):
         """
@@ -260,7 +253,7 @@ class BPTestRunner(BPRunner):
 
     def get_results(self):
         """
-        Get test result file and attache it to reservation
+        Get test result file and attache it to the reservation
         :return: 
         """
         if not self._test_id:
@@ -276,6 +269,11 @@ class BPTestRunner(BPRunner):
         return "Please check attachments for results"
 
     def get_test_file(self, test_name):
+        """
+        Download test file from BP
+        :param test_name: 
+        :return: 
+        """
         test_files_location = self.context.resource.attributes.get('Test Files Location')
         if not test_files_location:
             raise BPRunnerException(self.__class__.__name__, "Test Files Location attribute is not defined")

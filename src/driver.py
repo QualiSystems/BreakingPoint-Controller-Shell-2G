@@ -87,6 +87,15 @@ class BreakingPointControllerDriver(ResourceDriverInterface):
         with self._runners_pool.actual_runner(context) as runner:
             return runner.get_test_file(test_name)
 
+    def cleanup_reservation(self, context):
+        """
+        Clear reservation when it ends
+        :param context: 
+        :return: 
+        """
+        with self._runners_pool.actual_runner(context) as runner:
+            return runner.close()
+
     def cleanup(self):
         """
         Close runners
@@ -98,5 +107,4 @@ class BreakingPointControllerDriver(ResourceDriverInterface):
         while not cancellation_context.is_cancelled:
             time.sleep(1)
 
-        with self._runners_pool.actual_runner(context) as runner:
-            return runner.close()
+        self._runners_pool.close_all_runners()
