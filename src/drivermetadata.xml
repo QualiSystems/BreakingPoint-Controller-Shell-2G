@@ -5,7 +5,7 @@
             <Command Name="keep_alive" DisplayName="Keep Alive" Tags="" Description="" EnableCancellation="true"/>
             <Command Name="cleanup_reservation" DisplayName="Cleanup Reservation" Tags="" Description="" EnableCancellation="true"/>
         </Category>
-        <Command Name="load_config" DisplayName="Load configuration" Description="Reserve ports and load configuration">
+        <Command Name="load_config" DisplayName="Load Configuration" Description="Reserve ports and load configuration">
             <Parameters>
                 <Parameter Name="config_file_location" Type="String" Mandatory="True"
                            DisplayName="Breaking Point config file"
@@ -26,7 +26,7 @@
                            DefaultValue="False"/>
             </Parameters>
         </Command>
-        <Command Name="stop_traffic" DisplayName="Stop Traffic" Description="Stop running test and release ports"/>
+        <Command Name="stop_traffic" DisplayName="Stop Traffic" Description="Stop running test"/>
         <Command Name="get_results" DisplayName="Get Result"
                  Description="Get test result file and attach it to the reservation"/>
         <Command Name="get_statistics" DisplayName="Get Statistics" Description="Get real time statistics">
