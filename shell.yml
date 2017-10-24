@@ -3,5 +3,5 @@ shell:
     author: Yaroslav Nikonorov
     email: yaroslav.n@quali.com
     description: Breaking Point controller shell
-    version: 1.0.2
+    version: 1.2.2
     driver_name: BreakingPointControllerDriver
