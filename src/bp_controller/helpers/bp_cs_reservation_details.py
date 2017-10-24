@@ -1,11 +1,14 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 import re
 
 from cloudshell.tg.breaking_point.bp_exception import BPException
 
 
 class BPCSReservationDetails(object):
-    PORT_FAMILY = 'Port'
-    CHASSIS_FAMILY = 'Traffic Generator Chassis'
+    PORT_FAMILY = ['Port', 'Virtual Port']
+    CHASSIS_FAMILY = ['Traffic Generator Chassis', 'Virtual Traffic Generator Chassis']
     PORT_ATTRIBUTE = 'Logical Name'
     USERNAME_ATTRIBUTE = 'User'
     PASSWORD_ATTRIBUTE = 'Password'
@@ -41,7 +44,7 @@ class BPCSReservationDetails(object):
 
     def get_chassis_address(self):
         for resource in self._get_reservation_details().ReservationDescription.Resources:
-            if resource.ResourceFamilyName == self.CHASSIS_FAMILY:
+            if resource.ResourceFamilyName in self.CHASSIS_FAMILY:
                 chassis_address = resource.FullAddress
                 self.logger.debug('Chassis address {}'.format(chassis_address))
                 return chassis_address
@@ -49,7 +52,7 @@ class BPCSReservationDetails(object):
 
     def _get_chassis_name(self):
         for resource in self._get_reservation_details().ReservationDescription.Resources:
-            if resource.ResourceFamilyName == self.CHASSIS_FAMILY:
+            if resource.ResourceFamilyName in self.CHASSIS_FAMILY:
                 return resource.Name
         raise BPException(self.__class__.__name__, 'Cannot find {0} in this reservation'.format(self.CHASSIS_FAMILY))
 
@@ -63,8 +66,8 @@ class BPCSReservationDetails(object):
         reserved_ports = {}
         port_pattern = r'{}/M(?P<module>\d+)/P(?P<port>\d+)'.format(self.get_chassis_address())
         for resource in self._get_reservation_details().ReservationDescription.Resources:
-            if resource.ResourceFamilyName == self.PORT_FAMILY:
-                result = re.match(port_pattern, resource.FullAddress)
+            if resource.ResourceFamilyName in self.PORT_FAMILY:
+                result = re.search(port_pattern, resource.FullAddress)
                 if result:
                     logical_name = self.api.GetAttributeValue(resourceFullPath=resource.Name,
                                                               attributeName=self.PORT_ATTRIBUTE).Value
