@@ -1,110 +1,199 @@
-import time
-from bp_controller.runners.bp_runner_pool import BPRunnersPool
-from cloudshell.shell.core.driver_context import AutoLoadDetails
+from cloudshell.devices.driver_helper import get_logger_with_thread_id, get_api
+from cloudshell.devices.standards.traffic.controller.configuration_attributes_structure import \
+    GenericTrafficControllerResource
 from cloudshell.shell.core.resource_driver_interface import ResourceDriverInterface
+from cloudshell.tg.breaking_point.entities.bp_session import BPSession
+from cloudshell.tg.breaking_point.helpers.quali_rest_api_helper import QualiAPIHelper
+from cloudshell.tg.breaking_point.runners.bp_test_runner import BPTestRunner
 
 
-class BreakingPointControllerDriver(ResourceDriverInterface):
+class BreakingPointControllerShell2GDriver(ResourceDriverInterface):
+    SHELL_NAME = "BreakingPoint Controller 2G"
+    SUPPORTED_OS = ["BreakingPoint"]
+
     def __init__(self):
-        self._runners_pool = BPRunnersPool()
+        """
+        ctor must be without arguments, it is created with reflection at run time
+        """
+        self._bp_sessions = {}
 
-    def initialize(self, context):
-        """
-        :param context: ResourceCommandContext,ReservationContextDetailsobject with all Resource Attributes inside
-        :type context:  context: cloudshell.shell.core.driver_context.ResourceRemoteCommandContext
-        """
-        pass
+    def _session_runner(self, context):
+        logger = get_logger_with_thread_id(context)
+        api = get_api(context)
+        resource_config = GenericTrafficControllerResource.from_context(shell_name=self.SHELL_NAME,
+                                                                        supported_os=self.SUPPORTED_OS,
+                                                                        context=context)
+        reservation_id = context.reservation.reservation_id
+        bp_session = self._bp_sessions.get(reservation_id, None)
+        if not bp_session:
+            bp_session = BPSession(reservation_id)
+            self._bp_sessions[reservation_id] = bp_session
 
-    def get_inventory(self, context):
-        """
-        Autoload inventory
-        Return device structure with all standard attributes
-        :type context: cloudshell.shell.core.driver_context.AutoLoadCommandContext
-        :rtype: cloudshell.shell.core.driver_context.AutoLoadDetails
-        """
-        return AutoLoadDetails([], [])
+        return BPTestRunner(resource_config, bp_session, logger, api)
 
     def load_config(self, context, config_file_location):
-        """
-        Load configuration file and reserve ports
-        :param context: 
-        :param config_file_location: 
-        :return: 
-        """
-        with self._runners_pool.actual_runner(context) as runner:
-            return runner.load_configuration(config_file_location.replace('"', ''))
+        """Reserve ports and load configuration
 
-    # def load_pcap(self, context, pcap_file_location):
-    #     with self._runners_pool.actual_runner(context) as runner:
-    #         return runner.load_pcap(pcap_file_location.replace('"', ''))
+        :param context:
+        :param str config_file_location: configuration file location
+        :return:
+        """
+
+        return self._session_runner(context).load_configuration(config_file_location.replace('"', ''))
 
     def start_traffic(self, context, blocking):
-        """
-        Start traffic
+        """Start traffic on all ports
+
         :param context: the context the command runs on
-        :type context: cloudshell.shell.core.driver_context.ResourceRemoteCommandContext
-        :param blocking:
+        :param bool blocking: True - return after traffic finish to run, False - return immediately
         """
-        with self._runners_pool.actual_runner(context) as runner:
-            return runner.start_traffic(blocking)
+
+        return self._session_runner(context).start_traffic(blocking)
 
     def stop_traffic(self, context):
-        """
-        Stop traffic and unreserving ports
+        """Stop traffic on all ports
+
         :param context: the context the command runs on
-        :type context: cloudshell.shell.core.driver_context.ResourceRemoteCommandContext
         """
-        with self._runners_pool.actual_runner(context) as runner:
-            return runner.stop_traffic()
+        return self._session_runner(context).stop_traffic()
 
     def get_statistics(self, context, view_name, output_type):
+        """Get real time statistics as sandbox attachment
+
+        :param context:
+        :param str view_name: requested view name
+        :param str output_type: CSV or JSON
+        :return:
         """
-        Get real time statistics
-        :param context: 
-        :param view_name: 
-        :param output_type: 
-        :return: 
-        """
-        with self._runners_pool.actual_runner(context) as runner:
-            return runner.get_statistics(view_name, output_type)
+        return self._session_runner(context).get_statistics(view_name, output_type)
 
     def get_results(self, context):
         """
         Attach result file to the reservation
-        :param context: 
-        :return: 
+        :param context:
+        :return:
         """
-        with self._runners_pool.actual_runner(context) as runner:
-            return runner.get_results()
+        runner = self._session_runner(context)
+        return runner.get_results(context.reservation.environment_name,
+                                  QualiAPIHelper.from_context(context, runner.logger))
 
     def get_test_file(self, context, test_name):
         """
         Download test file configuration and put to the folder defined in Test Files Location attribute
-        :param context: 
+        :param context:
         :param test_name: Name of the test
-        :return: 
+        :return:
         """
-        with self._runners_pool.actual_runner(context) as runner:
-            return runner.get_test_file(test_name)
+
+        return self._session_runner(context).get_test_file(test_name)
+
+    def send_arp(self, context):
+        """Send ARP/ND for all protocols
+
+        :param context:
+        :return:
+        """
+        pass
+
+    def start_protocols(self, context):
+        """Start all protocols
+
+        :param context:
+        :return:
+        """
+        pass
+
+    def stop_protocols(self, context):
+        """Stop all protocols
+
+        :param context:
+        :return:
+        """
+        pass
+
+    def run_quick_test(self, context):
+        """Run quick test
+
+        :param context:
+        :return:
+        """
+        pass
+
+    def get_session_id(self, context):
+        """API only command to get REST session ID
+
+        :param context:
+        :return:
+        """
+        pass
+
+    def get_children(self, context, obj_ref, child_type):
+        """API only command to get list of children
+
+        :param context:
+        :param str obj_ref: valid object reference
+        :param str child_type: requested children type. If None returns all children
+        :return:
+        """
+        pass
+
+    def get_attributes(self, context, obj_ref):
+        """API only command to get object attributes
+
+        :param context:
+        :param str obj_ref: valid object reference
+        :return:
+        """
+        pass
+
+    def set_attribute(self, context, obj_ref, attr_name, attr_value):
+        """API only command to set traffic generator object attribute
+
+        :param context:
+        :param str obj_ref: valid object reference
+        :param str attr_name: attribute name
+        :param str attr_value: attribute value
+        :return:
+        """
+        pass
 
     def cleanup_reservation(self, context):
+        """Clear reservation when it ends
+
+        :param context:
+        :return:
         """
-        Clear reservation when it ends
-        :param context: 
-        :return: 
-        """
-        with self._runners_pool.actual_runner(context) as runner:
-            return runner.close()
+
+        reservation_id = context.reservation.reservation_id
+        bp_session = self._bp_sessions.get(reservation_id, None)
+        if bp_session:
+            logger = get_logger_with_thread_id(context)
+            api = get_api(context)
+            resource_config = GenericTrafficControllerResource.from_context(shell_name=self.SHELL_NAME,
+                                                                            supported_os=self.SUPPORTED_OS,
+                                                                            context=context)
+            test_runner = BPTestRunner(resource_config, bp_session, logger, api)
+            test_runner.close_session()
+            del self._bp_sessions[reservation_id]
+
+    def initialize(self, context):
+        pass
 
     def cleanup(self):
         """
-        Close runners
-        :return: 
+        :return:
         """
-        self._runners_pool.close_all_runners()
+        pass
 
     def keep_alive(self, context, cancellation_context):
-        while not cancellation_context.is_cancelled:
-            time.sleep(1)
+        """
 
-        self._runners_pool.close_all_runners()
+        :param context:
+        :param cancellation_context:
+        :return:
+        """
+        # while not cancellation_context.is_cancelled:
+        #     time.sleep(1)
+        #
+        # self._runners_pool.close_all_runners()
+        pass

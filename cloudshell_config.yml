@@ -1,6 +1,0 @@
-install:
-    host: 10.5.1.2
-    port: 9000
-    username: admin
-    password: admin
-    domain: Global
