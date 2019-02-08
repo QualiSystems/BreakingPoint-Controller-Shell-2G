@@ -70,7 +70,9 @@
                  Description="Get real time statistics as sandbox attachment">
             <Parameters>
                 <Parameter Name="view_name" Type="String" Mandatory="True" DisplayName="View Name"
-                           Description="The requested view name, see shell's documentation for details"/>
+                           Description="The requested view name, see shell's documentation for details.
+                           Possible values: summary, iface, l4stats, sslstats, ipsecstats,
+                           l7stats, clientstats, attackstats, gtp, resource"/>
                 <Parameter Name="output_type" Type="Lookup" Mandatory="True" AllowedValues="csv,json"
                            DisplayName="Output Type" DefaultValue="csv" Description="CSV or JSON"/>
             </Parameters>
