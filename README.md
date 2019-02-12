@@ -52,7 +52,7 @@ For detailed information about the shell’s structure and attributes, see the [
 ### Requirements
 Release: **Ixia BreakingPoint 2G shells**
 
-▪ CloudShell version: 7.0 and above
+▪ CloudShell version: 8.3 GA Patch 3 and above patches
 
 ▪ BreakingPoint application: 8.20 and above
 
@@ -60,7 +60,7 @@ Release: **Ixia BreakingPoint 2G shells**
 
 The shell's data model includes all shell metadata, families, and attributes.
 
-**BreakingPoint Chassis Families and Models**
+**BreakingPoint Families and Models**
 
 The chassis families and models are listed in the following table:
 
@@ -73,26 +73,9 @@ The chassis families and models are listed in the following table:
 
 **BreakingPoint Chassis Attributes**
 
-The chassis attribute names and types are listed in the following table:
+The attribute names and types are listed in the following section of the Networking Shell Standard:
 
-|Attribute|Type|Default|Description|
-|:---|:---|:---|:---|
-|Name|String||CloudShell resource display name.|
-|Address|String||Resource address (address of the device).|
-|Folder|String|Root|CloudShell folder in which to place the resource. Use the search bar to quickly find the desired folder.|
-|Visibility|Lookup|Family Default (Everyone)|Visibility determines who can see the resource in the diagram, search pane, and **Inventory** dashboard.  By default, visibility is defined in the resource family and can be changed for a specific resource.<br>Possible values: **Family Default (Everyone)**, **Admin only**, and **Everyone**.|
-|Remote Connection|Lookup|Family Default (Enable)|Remote connection determines if you can remotely connect to the resource. By default, the remote connection is defined in the resource family and can be changed for a specific resource.<br> Possible values: **Family Default (Enable)**, **Enable**, and **Disable**.|
-|User|String||Admin user on the device.|
-|Password|Password||Password for Admin user on the device.|
-|Client Install Path|String||Path in which the traffic client is installed on the Execution Server. For example *C:/Program Files (x86)/Ixia/IxOS/6.90-EA*.|
-|Controller Group|String||Name of the controller group that the traffic generator is associated with or the group(s) (comma-separated) the traffic controller is part of.|
-|Model|String||Device model.<br>This information is typically used for abstract resource filtering.|
-|Power Management|Boolean|Enabled|Used by the power management orchestration, if enabled, to determine whether to automatically manage the device power status.|
-|Serial Number|String||Serial number of the device.|
-|Server Description|String||Full description of the server. <br>Usually includes the OS, exact firmware version, and additional characteristics of the device.|
-|Supported Applications|String||Comma-separated list of traffic applications supported by this traffic generator. For example *IxLoad,IxNetwork*.|
-|Vendor|String||Vendor name.|
-|Version|String||Firmware version of the resource.|
+https://github.com/QualiSystems/cloudshell-standards/blob/master/Documentation/Traffic%20Generator%20Chassis%20Standard.md#attributes
 
 **BreakingPoint Controller Attributes**
 
@@ -135,26 +118,24 @@ The shells comprise:
 
 |File name|Description|
 |:-----|:-----|
-|breaking_point_controller_shell.zip|BreakingPoint Controller Shell package|
-|breaking_point_chassis_shell.zip|BreakingPoint Chassis Shell package|
-|bp-offline-package-1.0.6.zip|Shell Python dependecies (for offline deployments only)|
-|Ixia-B reakingPoint-Shell.pdf|Teardown script for cleaning reservation|
+|BreakingPoint Controller Shell 2G.zip|BreakingPoint Controller Shell package|
+|BreakingPoint Chassis Shell 2G.zip|BreakingPoint Chassis Shell package|
+|bp-offline-dependencies-2G-1.0.1.zip|Shell Python dependencies (for offline deployments only)|
+|Cleanup.Reservation.zip|Teardown script for cleaning reservation|
 
 ## Importing and Configuring the Shell
 This section describes how to import the BreakingPoint 2G shells and configure and modify the shell’s devices. 
 
-### Importing the shells into CloudShell
-
-**Note**: You will need to repeat these procedures, once for the controller shell and once for the chassis shell.
+### Importing the shell into CloudShell
 
 **To import the shell into CloudShell:**
   1. Make sure you have the shell’s zip package. If not, download the shell from the [Quali Community's Integrations](https://community.quali.com/integrations) page.
-  2. Backup your database.
-  3. Log in to CloudShell Portal as administrator of the relevant domain.
-  4. In the User menu select **Import Package**.
   
-     ![](https://github.com/stsuberi/SaraTest/blob/master/import_package.png)
-  5. Browse to the location of the downloaded shell file, select the relevant *.zip* file and Click **Open**. Alternatively, drag the shell’s .zip file into CloudShell Portal.
+  2. In CloudShell Portal, as Global administrator, open the **Manage – Shells** page.
+  
+  3. Click **Import**.
+  
+  4. In the dialog box, navigate to the shell's zip package, select it and click **Open**.
 
 The shell is displayed in the **Shells** page and can be used by domain administrators in all CloudShell domains to create new inventory resources, as explained in [Adding Inventory Resources](http://help.quali.com/Online%20Help/9.0/Portal/Content/CSP/INVN/Add-Rsrc-Tmplt.htm?Highlight=adding%20inventory%20resources). 
 
@@ -226,10 +207,6 @@ You can also modify existing resources, see [Managing Resources in the Inventory
 |:---|:---|:---|
 |User|String|Admin user on the device.|
 |Password|Password|Password for Admin user on the device.|
-|Client Install Path|String|Path in which the traffic client is installed on the Execution Server. For example *C:/Program Files (x86)/Ixia/IxOS/6.90-EA*.|
-|Controller Group|String|Name of the controller group that the traffic generator is associated with or the group(s) (comma-separated) the traffic controller is part of.|
-|Power Management|Boolean|Used by the power management orchestration, if enabled, to determine whether to automatically manage the device power status. Enabled by default.|
-|Supported Applications|String|Comma-separated list of traffic applications supported by this traffic generator. <br>For example *IxLoad,IxNetwork*.|
   6. Click **Continue**.
 
 This command discovers the device, fills in its attribute values and creates the device’s structure in CloudShell (if the device has a structure).
@@ -251,45 +228,6 @@ In online mode, the execution server automatically downloads and extracts the ap
 **To update online Python dependencies:**
 * If there is a live instance of the shell's driver or script, terminate the shell’s instance, as explained [here](http://help.quali.com/Online%20Help/9.0/Portal/Content/CSP/MNG/Mng-Exctn-Srv-Exct.htm#Terminat). If an instance does not exist, the execution server will download the Python dependencies the next time a command of the driver or script runs.
 
-## Associating a CloudShell Service to a Non-Global Domain
-
-In order to expose a service to users of a domain that is not the Global domain, you must associate the service to the domain. To do this, you need to associate the service to a category that is assigned to the domain.
-
-When you import a service shell, most shells are automatically assigned a default service category which is associated with the Global domain. For custom shells, this may not be true.
-
-**To associate the BreakingPoint Controller 2G service to a non-global domain:**
-
-**Note:** The association process differs depending on the type of shell - second generation (2G) shell or first generation (2G) shell. The instructions below detail the steps for a 2G service shell.
-
-1. (Optional) You can associate the service to a service category that already exists in CloudShell or associate the service to a new category.
-
-	**Note:** If you do not want to change the category(s) of this shell, you can use the default category that comes out-of-the-box (if it exists).
-	 
-	* Associate the service family to an existing category(s).
-	
-		1. In Resource Manager Client, open the **Resource Families** explorer and click the relevant service family.
-	
-		2. From the right pane, open the **Categories** tab.
-	
-		3. Click **Add**. The **Select Category** dialog box is displayed. 
-	
-		4. Select a category from the catalog and click **OK**.
-	
-	or
-
-	* Modify the 2G category(s) in the shell project’s configuration files to add a new category(s). See [Associating categories to 1st Gen Service Shells](https://devguide.quali.com/reference/9.0.0/associating-service-categories.html).
-
-2. Associate the shell’s service category to a domain.
-	1. In the **Manage** dashboard, click **Categories** from the left sidebar, or **Domains** if you are a domain admin.
-	
-	2. Select **Services Categories**.
-	
-	3. Click the service category that is associated with your service shell.
-	
-	4. In the **Edit Category** dialog box, from the **Domains** drop-down list, select the desired domain(s).
-	
-	5. Click **Save**.
-
 ## Typical Workflows
 
 Workflow 1 - *Creating a new blueprint*
@@ -300,7 +238,7 @@ Workflow 1 - *Creating a new blueprint*
 2. Add resources and services to the blueprint. 
    * Click the **Resource** button and add the BreakingPoint Chassis resource and all needed ports into the diagram. 
    * Associate the port's sub resources with the BreakingPoint Network Neighborhood Interfaces, by specifying the port's attribute **Logical Name** with the BP interface ID.
-   * Click the **App/Services** tab and add the **BreakingPointController** service.
+   * Click the **App/Services** tab and add the **BreakingPoint Controller 2G** service.
    * Specify the attribute **Test Files Location**, where test files will be downloaded.
    
 3. Add a teardown script, which runs the driver command `cleanup_reservation` when the reservation ends. This command releases ports which were used by the sandbox. 
@@ -335,9 +273,9 @@ This scenario helps you use predefined Tests and Network Neighborhoods.
    * In the **Network Neighborhood** section, click ‘…’, find and select the duplicated Network Neighborhood.
    * Click **Save**.
    
-4. Run the `GetTestFile BreakingPointController` command.
+4. Run the BreakingPoint Controller `GetTestFile` command.
    * Enter CloudShell Portal, and reserve the newly created blueprint.
-   * Run the `BreakingComandController service` command *GetTestFile* with the duplicated test name.
+   * Run the `BreakingPoint Controller service` command *GetTestFile* with the duplicated test name.
    * Open the folder specified in the attribute **Test Files Location**+<reservation_id> to view the file with the name of your duplicated test (extension “bpt”).
 
 Workflow 3 - *Running a test*
@@ -350,7 +288,7 @@ Workflow 3 - *Running a test*
    * Click **Run**, to load the test and network configuration from this file and reserve necessary ports.
    
 3. Run **Start Test**.
-   * Click the BreakingPointController **Commands** and enter the service commands.
+   * Click the BreakingPoint Controller **Commands** and enter the service commands.
    * Find the **Start Traffic** command and click **Enter** to run the menu.
    * Set **Blocking** to **True**, if you want subsequent commands to wait until the test finishes, or **False** to allow additional commands to run during the command's execution. 
    * Click **Run**.
