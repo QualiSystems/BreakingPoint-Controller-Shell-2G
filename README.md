@@ -120,7 +120,7 @@ The shells comprise:
 |:-----|:-----|
 |BreakingPoint Controller Shell 2G.zip|BreakingPoint Controller Shell package|
 |BreakingPoint Chassis Shell 2G.zip|BreakingPoint Chassis Shell package|
-|bp-offline-dependencies-2G-1.0.1.zip|Shell Python dependencies (for offline deployments only)|
+|bp-offline-dependencies-2G-x.x.x.zip|Shell Python dependencies (for offline deployments only)|
 |Cleanup.Reservation.zip|Teardown script for cleaning reservation|
 
 ## Importing and Configuring the Shell
