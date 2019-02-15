@@ -37,14 +37,15 @@ For additional information on traffic generator shell architecture, and setting 
 ### Ixia BreakingPoint 2G Shells
 To model an Ixia BreakingPoint device in CloudShell, use the following shells: 
 
-▪ [BreakingPoint Chassis 2G Shell](https://community.quali.com/repos/4350/ixia-breakingpoint-chassis-2-gen-shell), which provides data model and autoload functionality to model and load the BreakingPoint Chassis to resource management.
+▪ [BreakingPoint Chassis 2G Shell](https://community.quali.com/repos/1294/breaking-point-chassis-shell), which provides data model and autoload functionality to model and load the BreakingPoint Chassis to resource management.
 
-▪ [BreakingPoint Controller 2G Shell (service)](https://community.quali.com/repos/4347/ixia-breakingpoint-controller-2-gen-shell), which provides functionality to load test configuration, run tests, get test results, etc.
+▪ [BreakingPoint Controller 2G Shell (service)](https://community.quali.com/repos/1295/breaking-point-controller-shell), which provides functionality to load test configuration, run tests, get test results, etc.
 
 ### Standard version
-The BreakingPoint 2G shells are based on the Traffic Generator Chassis Shell Standard version 1.0.3 and Traffic Generator Controller Shell Standard version 2.0.0.
 
-For detailed information about the shell’s structure and attributes, see the [Traffic Generator Chassis Shell Standard](https://github.com/QualiSystems/cloudshell-standards/blob/master/Documentation/Traffic%20Generator%20Chassis%20Standard.md) and [Traffic Generator Controller Shell Standard](https://github.com/QualiSystems/cloudshell-standards/blob/master/Documentation/Traffic%20Generator%20Controller%20Shell%20Standard.md) in GitHub.
+The BreakingPoint 2G shells are based on the **Traffic Generator Chassis Shell Standard version 1.0.3** and the **Traffic Generator Controller Shell Standard version 2.0.0**.
+
+For detailed information about the shell’s structure and attributes, see the [Traffic Generator Chassis Shell Standard](https://github.com/QualiSystems/cloudshell-standards/blob/master/Documentation/Traffic%20Generator%20Chassis%20Standard.md) and the [Traffic Generator Controller Shell Standard](https://github.com/QualiSystems/cloudshell-standards/blob/master/Documentation/Traffic%20Generator%20Controller%20Shell%20Standard.md) in GitHub.
 
 ### Certified models
 ▪ BreakingPoint VE
@@ -52,9 +53,15 @@ For detailed information about the shell’s structure and attributes, see the [
 ### Requirements
 Release: **Ixia BreakingPoint 2G shells**
 
-▪ CloudShell version: 8.3 GA Patch 3 and above patches
+- CloudShell versions: 
 
-▪ BreakingPoint application: 8.20 and above
+   ▪ 8.3 GA Patch 3 and above patches
+	
+   ▪ 9.0 GA Patch 2 and above patches
+	
+   ▪ 9.1 GA and above patches, and above CloudShell versions
+
+- BreakingPoint application: 8.20 and above
 
 ## Data Model
 
