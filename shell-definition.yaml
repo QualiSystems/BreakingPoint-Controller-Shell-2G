@@ -2,7 +2,7 @@ tosca_definitions_version: tosca_simple_yaml_1_0
 
 metadata:
   template_name: BreakingPoint Controller Shell 2G
-  template_author: Anonymous
+  template_author: Quali
   template_version: 1.0.0
   template_icon: shell-icon.png
 
@@ -33,3 +33,6 @@ node_types:
       driver:
         file: BreakingPointControllerShell2GDriver.zip
         type: tosca.artifacts.File
+    capabilities:
+      concurrent_execution:
+        type: cloudshell.capabilities.SupportConcurrentCommands
