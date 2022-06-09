@@ -29,7 +29,7 @@
                  <source>src</source>
             </sources>
             <!-- the driver name of the driver to update -->
-            <targetName>BreakingPointControllerShell2GDriver</targetName>
+            <targetName>BreakingPoint Controller Driver</targetName>
         </driver>
     </drivers>
 

@@ -1,0 +1,6 @@
+-r requirements-ci.txt
+
+# Testing
+pytest
+cloudshell_traffic
+shellfoundry_traffic

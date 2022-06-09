@@ -1,6 +1,4 @@
-<Driver Description="Describe the purpose of your CloudShell shell"
-        MainClass="driver.BreakingPointControllerShell2GDriver"
-        Name="BreakingPointControllerShell2GDriver" Version="1.0.0">
+<Driver Description="BreakingPoint Controller 2G Driver" Name="BreakingPoint Controller Shell 2G"  MainClass="breakingpoint_driver.BreakingPointControllerDriver" Version="3.0.0" PythonVersion="3">
     <Layout>
 
         <Category Name="Hidden Commands">

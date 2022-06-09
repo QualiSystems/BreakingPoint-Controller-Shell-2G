@@ -1,4 +1,0 @@
-nose
-coverage
-unittest2
-mock

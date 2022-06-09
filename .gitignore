@@ -62,3 +62,6 @@ target/
 .ipynb_checkpoints
 .pypirc
 .DS_Store
+
+.idea
+venv*
