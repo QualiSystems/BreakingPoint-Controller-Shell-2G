@@ -16,7 +16,7 @@ from cloudshell.traffic.helpers import get_reservation_id, get_resources_from_re
 from cloudshell.traffic.tg import BREAKINGPOINT_CHASSIS_MODEL, BREAKINGPOINT_CONTROLLER_MODEL
 from shellfoundry_traffic.test_helpers import TestHelpers, create_session_from_config
 
-from src.breakingpoint_driver import BreakingPointControllerDriver
+from new_src.breakingpoint_driver import BreakingPointControllerDriver
 
 CHASSIS_920 = "192.168.26.72:admin:DxTbqlSgAVPmrDLlHvJrsA=="
 PORTS_920 = ["BP_920/Module1/Port1", "BP_920/Module1/Port2"]
@@ -81,7 +81,6 @@ def context(
     session: CloudShellAPISession, test_helpers: TestHelpers, context_wo_ports: ResourceCommandContext, server: list
 ) -> ResourceCommandContext:
     """Yield ResourceCommandContext for shell command testing."""
-    session.AddResourcesToReservation(test_helpers.reservation_id, [server["ports"][0].split("/")[0]], shared=True)
     session.AddResourcesToReservation(test_helpers.reservation_id, server["ports"])
     reservation_ports = get_resources_from_reservation(
         context_wo_ports, f"{BREAKINGPOINT_CHASSIS_MODEL}.GenericTrafficGeneratorPort"
@@ -134,9 +133,22 @@ class TestBreakingPointControllerDriver:
 class TestBreakingPointControllerShell:
     """Test indirect Shell calls."""
 
+    @staticmethod
+    def test_shell(session: CloudShellAPISession, context_wo_ports: ResourceCommandContext) -> None:
+        """Test that the shell is up and running. This test does not require chassis or configuration."""
+        session_id = session.ExecuteCommand(get_reservation_id(context_wo_ports), ALIAS, "Service", "get_session_id")
+        assert os.environ["COMPUTERNAME"].replace("-", "_") in session_id.Output
+        cmd_inputs = [
+            InputNameValue("obj_ref", "system1"),
+            InputNameValue("child_type", "project"),
+        ]
+        project = session.ExecuteCommand(get_reservation_id(context_wo_ports), ALIAS, "Service", "get_children", cmd_inputs)
+        assert len(json.loads(project.Output)) == 1
+        assert json.loads(project.Output)[0] == "project1"
+
     def test_load_config(self, session: CloudShellAPISession, context: ResourceCommandContext) -> None:
         """Test Load Configuration command."""
-        self._load_config(session, context, Path(__file__).parent.joinpath("TestConfig.bpt"))
+        self._load_config(session, context, Path(__file__).parent.joinpath("test_config.tcc"))
 
     @pytest.mark.usefixtures("skip_if_offline")
     def test_run_traffic(self, session: CloudShellAPISession, context: ResourceCommandContext) -> None:
@@ -172,5 +184,8 @@ class TestBreakingPointControllerShell:
 
     @staticmethod
     def _load_config(session: CloudShellAPISession, context: ResourceCommandContext, config: Path) -> None:
+        reservation_ports = get_resources_from_reservation(context, "STC Chassis Shell 2G.GenericTrafficGeneratorPort")
+        set_family_attribute(context, reservation_ports[0].Name, "Logical Name", "Port 1")
+        set_family_attribute(context, reservation_ports[1].Name, "Logical Name", "Port 2")
         cmd_inputs = [InputNameValue("config_file_location", config.as_posix())]
         session.ExecuteCommand(get_reservation_id(context), ALIAS, "Service", "load_config", cmd_inputs)

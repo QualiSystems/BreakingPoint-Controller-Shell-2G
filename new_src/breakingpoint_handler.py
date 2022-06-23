@@ -8,6 +8,7 @@ import logging
 from collections import OrderedDict
 from pathlib import Path
 from typing import Union, Optional
+from xml.etree import ElementTree
 
 import requests
 from cloudshell.shell.core.driver_context import ResourceCommandContext
@@ -24,19 +25,23 @@ OFFLINE_PORT_MARKER = "offline-debug"
 
 class BreakingPointRestClient:
 
-    def __init__(self, address, username, password) -> None:
+    def __init__(self, address: str, username: str, password: str, version: int, logger: logging.Logger) -> None:
         super().__init__()
+        self.logger = logger
+        self.logger.debug('Login request with  Username: {0}, Password: {1}'.format(username, password))
         self.session = requests.Session()
         session_url = f"https://{address}/api/v1/auth/session"
         self.bps_session = self.post(session_url, json={"username": username, "password": password})
-        session_id = self.get(self.bps_session["userAccountUrl"])["id"]
-        self.base_url = f"https://{address}/bps/api/v2/sessions/{session_id}"
+        if version == 1:
+            self.base_url = f"https://{address}/api/v1"
+        else:
+            session_id = self.get(self.bps_session["userAccountUrl"])["id"]
+            self.base_url = f"https://{address}/bps/api/v2/sessions/{session_id}"
 
     def get(self, url: str) -> dict:
         return self._valid(self.session.get(self._build_url(url), verify=False))
 
-    def post(self, url: str, data: Optional[str] = None, json: Optional[dict] = None, **kwargs: object) -> dict:
-        json = json if json else {}
+    def post(self, url: str, data: Optional[dict] = None, json: Optional[dict] = None, **kwargs: object) -> dict:
         return self._valid(self.session.post(self._build_url(url), data=data, json=json, verify=False, **kwargs))
 
     def _build_url(self, url: str) -> str:
@@ -73,27 +78,26 @@ class BreakingPointHandler(TgControllerHandler):
         self.logger.debug(f"Encrypted password - {self.resource.password}")
         password = CloudShellSessionContext(context).get_api().DecryptPassword(self.resource.password).Value
         self.logger.debug(f"Password - {password}")
-        self.rest_client = BreakingPointRestClient(controller, user, password)
+        self.rest_client = BreakingPointRestClient(controller, user, password, version=1, logger=self.logger)
 
     def cleanup(self) -> None:
         """Disconnect from BreakingPoint REST server."""
 
     def load_config(self, _: ResourceCommandContext, breakingpoint_test_file_name: str) -> None:
         """Load STC configuration file, and map and reserve ports."""
-        self.logger.debug(f'Importing test {breakingpoint_test_file_name}')
+        self.logger.debug(f'Uploading test {breakingpoint_test_file_name}')
 
-        uri = '/api/v1/bps/upload'
-        json_data = {'force': True}
-        name = Path(breakingpoint_test_file_name).stem
+        data = {'force': True}
+        name = Path(breakingpoint_test_file_name).name
         files = {'file': (name, open(breakingpoint_test_file_name, 'rb'))}
-        data = self._rest_service.request_post_files(uri, json_data, files)
-        result = data
+        self.rest_client.post('bps/upload', data=data, files=files)
 
-
-
-        json_data = {"name": name, "filename": breakingpoint_test_file_name, "force": True}
-        data = self.rest_client.post("bps/testmodel/operations/importModel", json=json_data)
-        print(data)
+        test_model = ElementTree.parse(Path(breakingpoint_test_file_name).as_posix()).getroot().find('testmodel')
+        network_name = test_model.get('network')
+        interfaces = []
+        for interface in test_model.findall('interface'):
+            interfaces.append(int(interface.get('number')))
+        self._port_reservation_helper.reserve_ports(network_name, interfaces, self._bp_session)
 
     def load_config_stc(self, context: ResourceCommandContext, stc_config_file_name: str) -> None:
         """Load STC configuration file, and map and reserve ports."""

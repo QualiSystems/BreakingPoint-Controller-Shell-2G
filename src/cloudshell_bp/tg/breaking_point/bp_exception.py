@@ -1,0 +1,2 @@
+class BPException(Exception):
+    pass

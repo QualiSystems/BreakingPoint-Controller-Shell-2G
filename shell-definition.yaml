@@ -12,7 +12,6 @@ metadata:
   template_icon: shell-icon.png
 
 node_types:
-
   vendor.resource.BreakingPoint Controller Shell 2G:
     derived_from: cloudshell.nodes.TrafficGeneratorController
     artifacts:
@@ -22,3 +21,6 @@ node_types:
       driver:
         file: BreakingPointControllerShell2GDriver.zip
         type: tosca.artifacts.File
+    capabilities:
+      concurrent_execution:
+        type: cloudshell.capabilities.SupportConcurrentCommands
