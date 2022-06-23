@@ -3,4 +3,6 @@
 # Testing
 pytest
 cloudshell_traffic
-shellfoundry_traffic
+#shellfoundry_traffic
+shellfoundry
+
