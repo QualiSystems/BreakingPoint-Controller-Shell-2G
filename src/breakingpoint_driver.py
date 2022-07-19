@@ -84,12 +84,11 @@ class BreakingPointControllerDriver(ResourceDriverInterface):
         runner = self._session_runner(context)
         return runner.get_results(context.reservation.environment_name, QualiAPIHelper.from_context(context, runner.logger))
 
-    def get_test_file(self, context: ResourceCommandContext, test_name: str):
+    def get_test_file(self, context: ResourceCommandContext, test_name: str) -> str:
         """Download test file configuration and put to the folder defined in Test Files Location attribute.
 
         :param context:
         :param test_name: Name of the test
-        :return:
         """
         return self._session_runner(context).get_test_file(test_name)
 
