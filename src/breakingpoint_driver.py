@@ -24,7 +24,7 @@ class BreakingPointControllerDriver(ResourceDriverInterface):
 
     def __init__(self) -> None:
         """Init must be without arguments, it is created with reflection at run time."""
-        self._bp_sessions = {}
+        self._bp_sessions: dict = {}
 
     def _session_runner(self, context: ResourceCommandContext) -> BPTestRunner:
         logger = get_logger_with_thread_id(context)
@@ -67,13 +67,12 @@ class BreakingPointControllerDriver(ResourceDriverInterface):
         """
         return self._session_runner(context).stop_traffic()
 
-    def get_statistics(self, context, view_name, output_type):
+    def get_statistics(self, context: ResourceCommandContext, view_name: str, output_type: str) -> str:
         """Get real time statistics as sandbox attachment.
 
         :param context:
         :param str view_name: requested view name
         :param str output_type: CSV or JSON
-        :return:
         """
         return self._session_runner(context).get_statistics(view_name, output_type)
 
