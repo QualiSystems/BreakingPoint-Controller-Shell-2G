@@ -146,7 +146,7 @@ class BreakingPointControllerDriver(ResourceDriverInterface):
         :param str attr_value: attribute value
         """
 
-    def cleanup_reservation(self, context) -> None:
+    def cleanup_reservation(self, context: ResourceCommandContext) -> None:
         """Clear reservation when it ends.
 
         :param context:

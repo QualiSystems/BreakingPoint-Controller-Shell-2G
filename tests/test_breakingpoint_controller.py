@@ -63,7 +63,7 @@ def driver(test_helpers: TestHelpers, server: dict) -> Iterable[BreakingPointCon
 
 
 @pytest.fixture()
-def context_wo_ports(session: CloudShellAPISession, test_helpers: TestHelpers, server: list) -> ResourceCommandContext:
+def context_wo_ports(session: CloudShellAPISession, test_helpers: TestHelpers, server: dict) -> ResourceCommandContext:
     """Yield ResourceCommandContext for shell command testing."""
     address, user, password = server["server"].split(":")
     attributes = [
@@ -77,7 +77,7 @@ def context_wo_ports(session: CloudShellAPISession, test_helpers: TestHelpers, s
 
 @pytest.fixture()
 def context(
-    session: CloudShellAPISession, test_helpers: TestHelpers, context_wo_ports: ResourceCommandContext, server: list
+    session: CloudShellAPISession, test_helpers: TestHelpers, context_wo_ports: ResourceCommandContext, server: dict
 ) -> ResourceCommandContext:
     """Yield ResourceCommandContext for shell command testing."""
     session.AddResourcesToReservation(test_helpers.reservation_id, [server["ports"][0].split("/")[0]], shared=True)
