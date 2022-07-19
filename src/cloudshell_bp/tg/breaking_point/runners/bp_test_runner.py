@@ -232,11 +232,10 @@ class BPTestRunner(BPRunner):
         quali_api_helper.upload_file(self.reservation_id, file_name=file_name, file_stream=pdf_result)
         return "Please check attachments for results"
 
-    def get_test_file(self, test_name):
-        """
-        Download test file from BP
+    def get_test_file(self, test_name: str) -> str:
+        """Download test file from BP.
+
         :param test_name:
-        :return:
         """
         test_files_location = self._resource_config.test_files_location
 

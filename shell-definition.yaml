@@ -12,7 +12,7 @@ metadata:
   template_icon: shell-icon.png
 
 node_types:
-  vendor.resource.BreakingPoint Controller Shell 2G:
+  vendor.resource.BreakingPoint Controller 2G:
     derived_from: cloudshell.nodes.TrafficGeneratorController
     artifacts:
       icon:

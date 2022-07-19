@@ -3,7 +3,6 @@ Test StcControllerShell2GDriver.
 """
 # pylint: disable=redefined-outer-name
 import json
-import os
 import time
 from pathlib import Path
 from typing import Iterable
@@ -19,7 +18,7 @@ from shellfoundry_traffic.test_helpers import TestHelpers, create_session_from_c
 from src.breakingpoint_driver import BreakingPointControllerDriver
 
 CHASSIS_920 = "192.168.26.72:admin:DxTbqlSgAVPmrDLlHvJrsA=="
-PORTS_920 = ["BP_920/Module1/Port1", "BP_920/Module1/Port2"]
+PORTS_920 = ["BP_920/Module3/Port1", "BP_920/Module3/Port2"]
 
 server_properties = {"bp_920": {"server": CHASSIS_920, "ports": PORTS_920}}
 
@@ -35,7 +34,7 @@ def server(request: SubRequest) -> dict:
 @pytest.fixture(scope="session")
 def session() -> CloudShellAPISession:
     """Yield session."""
-    yield create_session_from_config()
+    return create_session_from_config()
 
 
 @pytest.fixture()
