@@ -255,7 +255,7 @@ class BPTestRunner(BPRunner):
         )
         test_file_content = self._download_test_file_flow.download_test_file(test_name)
         with open(test_file_path, "w") as f:
-            f.write(test_file_content)
+            f.write(test_file_content.decode("utf-8"))
         return test_file_path
 
     def close_session(self):

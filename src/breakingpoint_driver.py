@@ -19,7 +19,7 @@ from cloudshell_bp.tg.breaking_point.runners.bp_test_runner import BPTestRunner
 class BreakingPointControllerDriver(ResourceDriverInterface):
     """BreakingPoint controller shell driver."""
 
-    SHELL_NAME = "BreakingPoint Controller Shell 2G"
+    SHELL_NAME = "BreakingPoint Controller 2G"
     SUPPORTED_OS = ["BreakingPoint"]
 
     def __init__(self) -> None:

@@ -7,7 +7,7 @@ imports:
 
 metadata:
   template_name: BreakingPoint Controller Shell 2G
-  template_version: 3.0.0
+  template_version: 3.0.1
   template_author: Quali
   template_icon: shell-icon.png
 
