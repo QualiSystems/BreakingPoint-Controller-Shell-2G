@@ -70,6 +70,7 @@ def context_wo_ports(session: CloudShellAPISession, test_helpers: TestHelpers, s
         AttributeNameValue(f"{BREAKINGPOINT_CONTROLLER_MODEL}.Address", address),
         AttributeNameValue(f"{BREAKINGPOINT_CONTROLLER_MODEL}.User", user),
         AttributeNameValue(f"{BREAKINGPOINT_CONTROLLER_MODEL}.Password", password),
+        AttributeNameValue(f"{BREAKINGPOINT_CONTROLLER_MODEL}.Test Files Location", "C:\\Temp"),
     ]
     session.AddServiceToReservation(test_helpers.reservation_id, BREAKINGPOINT_CONTROLLER_MODEL, ALIAS, attributes)
     return test_helpers.resource_command_context(service_name=ALIAS)
@@ -99,6 +100,11 @@ def skip_if_offline(server: list) -> None:
 
 class TestBreakingPointControllerDriver:
     """Test direct driver calls."""
+
+    def test_get_file(self, driver: BreakingPointControllerDriver, context: ResourceCommandContext) -> None:
+        """Test load_config command."""
+        config_file = Path(__file__).parent.joinpath("BitBlaster")
+        driver.get_test_file(context, config_file.as_posix())
 
     def test_load_config(self, driver: BreakingPointControllerDriver, context: ResourceCommandContext) -> None:
         """Test load_config command."""
